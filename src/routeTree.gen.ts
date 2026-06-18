@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
+import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
 
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
@@ -40,6 +41,11 @@ const ContractsIdRoute = ContractsIdRouteImport.update({
   path: '/contracts/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPiVerifyRoute = ApiPiVerifyRouteImport.update({
+  id: '/api/pi/verify',
+  path: '/api/pi/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/api/pi/verify': typeof ApiPiVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts': typeof ContractsIndexRoute
+  '/api/pi/verify': typeof ApiPiVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,6 +70,7 @@ export interface FileRoutesById {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/api/pi/verify': typeof ApiPiVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -71,8 +80,15 @@ export interface FileRouteTypes {
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
+    | '/api/pi/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/how-it-works' | '/contracts/$id' | '/contracts/new' | '/contracts'
+  to:
+    | '/'
+    | '/how-it-works'
+    | '/contracts/$id'
+    | '/contracts/new'
+    | '/contracts'
+    | '/api/pi/verify'
   id:
     | '__root__'
     | '/'
@@ -80,6 +96,7 @@ export interface FileRouteTypes {
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
+    | '/api/pi/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +105,7 @@ export interface RootRouteChildren {
   ContractsIdRoute: typeof ContractsIdRoute
   ContractsNewRoute: typeof ContractsNewRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
+  ApiPiVerifyRoute: typeof ApiPiVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -127,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pi/verify': {
+      id: '/api/pi/verify'
+      path: '/api/pi/verify'
+      fullPath: '/api/pi/verify'
+      preLoaderRoute: typeof ApiPiVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -136,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContractsIdRoute: ContractsIdRoute,
   ContractsNewRoute: ContractsNewRoute,
   ContractsIndexRoute: ContractsIndexRoute,
+  ApiPiVerifyRoute: ApiPiVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
