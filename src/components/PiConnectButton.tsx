@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { authenticate, isPiAvailable } from "@/lib/pi";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { authenticate, initPi } from "@/lib/pi";
 import { clearSession, loadSession, saveSession } from "@/lib/pi-session";
 import type { PiUser } from "@/lib/pi";
 
@@ -8,28 +8,38 @@ export function PiConnectButton({ compact = false }: { compact?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [piReady, setPiReady] = useState(false);
+  const autoTried = useRef(false);
 
-  useEffect(() => {
-    setMounted(true);
-    setUser(loadSession());
-    setPiReady(isPiAvailable());
-    const handler = () => setUser(loadSession());
-    window.addEventListener("pi:session", handler);
-    return () => window.removeEventListener("pi:session", handler);
-  }, []);
-
-  const connect = async () => {
+  const connect = useCallback(async () => {
     setLoading(true);
     try {
       const u = await authenticate();
       saveSession(u);
     } catch (e) {
-      console.error(e);
-      alert("Pi wallet connection failed. Open this app in the Pi Browser to use real Pi auth.");
+      console.error("[Pi] auth failed:", e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    const existing = loadSession();
+    setUser(existing);
+    const handler = () => setUser(loadSession());
+    window.addEventListener("pi:session", handler);
+
+    // Await SDK init, then auto-trigger authentication once on load
+    initPi().then((ready) => {
+      setPiReady(ready);
+      if (ready && !existing && !autoTried.current) {
+        autoTried.current = true;
+        void connect();
+      }
+    });
+
+    return () => window.removeEventListener("pi:session", handler);
+  }, [connect]);
 
   if (user) {
     return (
@@ -55,7 +65,7 @@ export function PiConnectButton({ compact = false }: { compact?: boolean }) {
       className="group inline-flex items-center gap-2 rounded-full bg-gold-grad px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold transition hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
     >
       <span className="font-display text-base leading-none">π</span>
-      {loading ? "Connecting…" : !mounted ? "Connect Pi Wallet" : piReady ? "Connect Pi Wallet" : "Connect (demo)"}
+      {loading ? "Signing in…" : !mounted ? "Sign in with Pi" : piReady ? "Sign in with Pi" : "Sign in (demo)"}
     </button>
   );
 }
