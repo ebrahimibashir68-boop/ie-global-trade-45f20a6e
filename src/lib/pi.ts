@@ -73,8 +73,8 @@ export type PiVerifiedSession = PiUser & { verified: boolean };
 export async function authenticate(): Promise<PiVerifiedSession> {
   const ready = await initPi();
   if (ready && window.Pi) {
-    // Only the "username" scope per requirements
-    const scopes = ["username"];
+    // Request both username (identity) and payments (U2A) scopes
+    const scopes = ["username", "payments"];
     const auth = await window.Pi.authenticate(scopes, (payment) => {
       console.warn("Incomplete payment found:", payment);
     });
