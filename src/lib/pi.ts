@@ -7,7 +7,14 @@ export type PiUser = {
   uid: string;
   username: string;
   accessToken: string;
+  scopes?: string[];
 };
+
+export const REQUIRED_PAYMENT_SCOPES = ["username", "payments"] as const;
+
+export function hasPaymentsScope(user: { scopes?: string[] } | null | undefined): boolean {
+  return !!user?.scopes?.includes("payments");
+}
 
 export type PaymentData = {
   amount: number;
