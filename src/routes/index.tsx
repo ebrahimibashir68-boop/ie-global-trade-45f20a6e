@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ContractCard } from "@/components/ContractCard";
 import { listContracts, seedIfEmpty, type Contract } from "@/lib/contracts-store";
+import { ConfirmSetupPayment } from "@/components/ConfirmSetupPayment";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -81,6 +82,10 @@ function Home() {
                 <div className="mt-1 font-display text-2xl font-semibold text-foreground">{s.v}</div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-10">
+            <ConfirmSetupPayment />
           </div>
         </div>
       </section>
