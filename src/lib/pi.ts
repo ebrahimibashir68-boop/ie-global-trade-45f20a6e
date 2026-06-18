@@ -7,7 +7,14 @@ export type PiUser = {
   uid: string;
   username: string;
   accessToken: string;
+  scopes?: string[];
 };
+
+export const REQUIRED_PAYMENT_SCOPES = ["username", "payments"] as const;
+
+export function hasPaymentsScope(user: { scopes?: string[] } | null | undefined): boolean {
+  return !!user?.scopes?.includes("payments");
+}
 
 export type PaymentData = {
   amount: number;
@@ -70,12 +77,13 @@ export function initPi(): Promise<boolean> {
 
 export type PiVerifiedSession = PiUser & { verified: boolean };
 
-export async function authenticate(): Promise<PiVerifiedSession> {
+export async function authenticate(
+  scopes: readonly string[] = REQUIRED_PAYMENT_SCOPES,
+): Promise<PiVerifiedSession> {
   const ready = await initPi();
   if (ready && window.Pi) {
-    // Request both username (identity) and payments (U2A) scopes
-    const scopes = ["username", "payments"];
-    const auth = await window.Pi.authenticate(scopes, (payment) => {
+    const requested = [...scopes];
+    const auth = await window.Pi.authenticate(requested, (payment) => {
       console.warn("Incomplete payment found:", payment);
     });
     // Send the access token to the backend for verification against
@@ -93,6 +101,7 @@ export async function authenticate(): Promise<PiVerifiedSession> {
       uid: verified.uid,
       username: verified.username,
       accessToken: auth.accessToken,
+      scopes: requested,
       verified: true,
     };
   }
@@ -102,6 +111,7 @@ export async function authenticate(): Promise<PiVerifiedSession> {
     uid: "mock-" + Math.random().toString(36).slice(2, 10),
     username: "pioneer_demo",
     accessToken: "mock-access-token",
+    scopes: [...scopes],
     verified: false,
   };
 }
