@@ -6,9 +6,13 @@ import type { PiUser } from "@/lib/pi";
 export function PiConnectButton({ compact = false }: { compact?: boolean }) {
   const [user, setUser] = useState<PiUser | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [piReady, setPiReady] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setUser(loadSession());
+    setPiReady(isPiAvailable());
     const handler = () => setUser(loadSession());
     window.addEventListener("pi:session", handler);
     return () => window.removeEventListener("pi:session", handler);
@@ -51,7 +55,7 @@ export function PiConnectButton({ compact = false }: { compact?: boolean }) {
       className="group inline-flex items-center gap-2 rounded-full bg-gold-grad px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold transition hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
     >
       <span className="font-display text-base leading-none">π</span>
-      {loading ? "Connecting…" : isPiAvailable() ? "Connect Pi Wallet" : "Connect (demo)"}
+      {loading ? "Connecting…" : !mounted ? "Connect Pi Wallet" : piReady ? "Connect Pi Wallet" : "Connect (demo)"}
     </button>
   );
 }
