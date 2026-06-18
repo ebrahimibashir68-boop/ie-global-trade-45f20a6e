@@ -77,12 +77,6 @@ export function initPi(): Promise<boolean> {
 
 export type PiVerifiedSession = PiUser & { verified: boolean };
 
-export async function authenticate(): Promise<PiVerifiedSession> {
-  const ready = await initPi();
-  if (ready && window.Pi) {
-    // Request both username (identity) and payments (U2A) scopes
-export type PiVerifiedSession = PiUser & { verified: boolean };
-
 export async function authenticate(
   scopes: readonly string[] = REQUIRED_PAYMENT_SCOPES,
 ): Promise<PiVerifiedSession> {
