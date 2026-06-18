@@ -15,6 +15,8 @@ import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
+import { Route as ApiPiPaymentsCompleteRouteImport } from './routes/api/pi.payments.complete'
+import { Route as ApiPiPaymentsApproveRouteImport } from './routes/api/pi.payments.approve'
 
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
@@ -46,6 +48,16 @@ const ApiPiVerifyRoute = ApiPiVerifyRouteImport.update({
   path: '/api/pi/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPiPaymentsCompleteRoute = ApiPiPaymentsCompleteRouteImport.update({
+  id: '/api/pi/payments/complete',
+  path: '/api/pi/payments/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPiPaymentsApproveRoute = ApiPiPaymentsApproveRouteImport.update({
+  id: '/api/pi/payments/approve',
+  path: '/api/pi/payments/approve',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +66,8 @@ export interface FileRoutesByFullPath {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
+  '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +76,8 @@ export interface FileRoutesByTo {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts': typeof ContractsIndexRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
+  '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +87,8 @@ export interface FileRoutesById {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
+  '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +99,8 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts/'
     | '/api/pi/verify'
+    | '/api/pi/payments/approve'
+    | '/api/pi/payments/complete'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +109,8 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts'
     | '/api/pi/verify'
+    | '/api/pi/payments/approve'
+    | '/api/pi/payments/complete'
   id:
     | '__root__'
     | '/'
@@ -97,6 +119,8 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts/'
     | '/api/pi/verify'
+    | '/api/pi/payments/approve'
+    | '/api/pi/payments/complete'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +130,8 @@ export interface RootRouteChildren {
   ContractsNewRoute: typeof ContractsNewRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
   ApiPiVerifyRoute: typeof ApiPiVerifyRoute
+  ApiPiPaymentsApproveRoute: typeof ApiPiPaymentsApproveRoute
+  ApiPiPaymentsCompleteRoute: typeof ApiPiPaymentsCompleteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPiVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pi/payments/complete': {
+      id: '/api/pi/payments/complete'
+      path: '/api/pi/payments/complete'
+      fullPath: '/api/pi/payments/complete'
+      preLoaderRoute: typeof ApiPiPaymentsCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pi/payments/approve': {
+      id: '/api/pi/payments/approve'
+      path: '/api/pi/payments/approve'
+      fullPath: '/api/pi/payments/approve'
+      preLoaderRoute: typeof ApiPiPaymentsApproveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +202,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContractsNewRoute: ContractsNewRoute,
   ContractsIndexRoute: ContractsIndexRoute,
   ApiPiVerifyRoute: ApiPiVerifyRoute,
+  ApiPiPaymentsApproveRoute: ApiPiPaymentsApproveRoute,
+  ApiPiPaymentsCompleteRoute: ApiPiPaymentsCompleteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

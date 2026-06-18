@@ -118,11 +118,35 @@ export async function createPayment(data: PaymentData): Promise<PaymentResult> {
   return new Promise((resolve) => {
     if (ready && window.Pi) {
       window.Pi.createPayment(data, {
-        onReadyForServerApproval: (paymentId) => {
-          console.log("[Pi] approve required:", paymentId);
+        onReadyForServerApproval: async (paymentId) => {
+          try {
+            const res = await fetch("/api/pi/payments/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId }),
+            });
+            if (!res.ok) console.error("[Pi] approve failed", await res.text());
+          } catch (e) {
+            console.error("[Pi] approve error", e);
+          }
         },
-        onReadyForServerCompletion: (paymentId, txid) => {
-          console.log("[Pi] complete required:", paymentId, txid);
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            const res = await fetch("/api/pi/payments/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid }),
+            });
+            if (!res.ok) {
+              console.error("[Pi] complete failed", await res.text());
+              resolve({ paymentId, txid, status: "error", message: "Server completion failed" });
+              return;
+            }
+          } catch (e) {
+            console.error("[Pi] complete error", e);
+            resolve({ paymentId, txid, status: "error", message: String(e) });
+            return;
+          }
           resolve({ paymentId, txid, status: "completed" });
         },
         onCancel: (paymentId) =>
