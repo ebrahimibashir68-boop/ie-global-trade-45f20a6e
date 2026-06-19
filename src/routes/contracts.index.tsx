@@ -7,9 +7,24 @@ import { listContracts, seedIfEmpty, type Contract, type ContractStatus } from "
 export const Route = createFileRoute("/contracts/")({
   head: () => ({
     meta: [
-      { title: "Contracts marketplace · PiTrade" },
-      { name: "description", content: "Browse global import-export smart contracts settled in Pi." },
+      { title: "Contracts marketplace · PiTrade global trade in Pi" },
+      { name: "description", content: "Browse global import-export smart contracts settled in Pi. Filter by status — awaiting payment, funded, in transit, completed." },
+      { property: "og:title", content: "PiTrade Marketplace — Global Trade Contracts in Pi" },
+      { property: "og:description", content: "Live import-export smart contracts settled directly from Pi Wallets." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://ie-global-trade.lovable.app/contracts" },
     ],
+    links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/contracts" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "PiTrade Contracts Marketplace",
+        description: "Global import-export smart contracts settled in Pi.",
+        url: "https://ie-global-trade.lovable.app/contracts",
+      }),
+    }],
   }),
   component: ContractsList,
 });
@@ -56,10 +71,13 @@ function ContractsList() {
         </div>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
+          <label htmlFor="contract-search" className="sr-only">Search contracts</label>
           <input
+            id="contract-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search goods, countries…"
+            aria-label="Search contracts"
             className="w-full max-w-sm rounded-full border border-border bg-surface px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-gold focus:outline-none"
           />
           <div className="flex flex-wrap gap-1.5">
