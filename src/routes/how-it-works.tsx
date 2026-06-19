@@ -4,9 +4,31 @@ import { SiteHeader } from "@/components/SiteHeader";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How it works · PiTrade" },
-      { name: "description", content: "How global import-export smart contracts execute on the Pi Network with direct user-to-app payments." },
+      { title: "How PiTrade works · 6-step Pi smart contract flow" },
+      { name: "description", content: "How global import-export smart contracts execute on the Pi Network: wallet sign-in, drafting, server-approved Pi payments, and on-chain settlement." },
+      { property: "og:title", content: "How PiTrade Works — 6 steps from draft to delivery" },
+      { property: "og:description", content: "Pi Wallet sign-in, drafting, user-to-app Pi payments with server approval, lifecycle tracking to delivery." },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: "https://ie-global-trade.lovable.app/how-it-works" },
     ],
+    links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/how-it-works" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "How PiTrade executes a global trade contract",
+        description: "Six deterministic steps from Pi Wallet sign-in to on-chain settlement.",
+        step: [
+          { "@type": "HowToStep", position: 1, name: "Connect Pi Wallet", text: "Open the app in the Pi Browser. The Pi SDK authenticates the user with username and payments scopes." },
+          { "@type": "HowToStep", position: 2, name: "Draft the contract", text: "Buyer or broker fills in goods, quantity, Incoterm 2020, origin and destination, and the seller's Pi username." },
+          { "@type": "HowToStep", position: 3, name: "Buyer signs and pays in Pi", text: "Pi.createPayment opens the wallet sheet with amount, memo and metadata.contractId." },
+          { "@type": "HowToStep", position: 4, name: "Server approval", text: "Backend handles onReadyForServerApproval(paymentId) and calls /payments/{id}/approve." },
+          { "@type": "HowToStep", position: 5, name: "Server completion", text: "Backend handles onReadyForServerCompletion(paymentId, txid) and calls /payments/{id}/complete." },
+          { "@type": "HowToStep", position: 6, name: "Lifecycle to delivery", text: "Status moves Funded → In transit → Completed; all transitions recorded on-chain via txid." },
+        ],
+      }),
+    }],
   }),
   component: HowItWorks,
 });

@@ -8,9 +8,14 @@ import { loadSession } from "@/lib/pi-session";
 export const Route = createFileRoute("/contracts/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Contract ${params.id} · PiTrade` },
-      { name: "description", content: "Smart contract details and Pi payment settlement." },
+      { title: `Contract ${params.id} · PiTrade smart contract` },
+      { name: "description", content: `Trade contract ${params.id} on PiTrade — terms, route, parties and Pi Wallet settlement.` },
+      { property: "og:title", content: `PiTrade Contract ${params.id}` },
+      { property: "og:description", content: "Import-export smart contract settled in Pi — route, goods, parties and on-chain payment." },
+      { property: "og:type", content: "article" },
+      { property: "og:url", content: `https://ie-global-trade.lovable.app/contracts/${params.id}` },
     ],
+    links: [{ rel: "canonical", href: `https://ie-global-trade.lovable.app/contracts/${params.id}` }],
   }),
   component: ContractDetail,
   notFoundComponent: () => (

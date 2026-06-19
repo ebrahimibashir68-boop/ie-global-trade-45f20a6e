@@ -12,7 +12,28 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Create, sign and settle international trade contracts in Pi. Direct Pi Wallet connection and user-to-app payments." },
       { property: "og:title", content: "PiTrade — Global Import/Export on Pi" },
       { property: "og:description", content: "Smart contracts for goods, materials and equipment, settled in Pi." },
+      { property: "og:url", content: "https://ie-global-trade.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify([
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "PiTrade",
+          url: "https://ie-global-trade.lovable.app/",
+          description: "Global import-export smart contracts platform settled in Pi.",
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "PiTrade",
+          url: "https://ie-global-trade.lovable.app/",
+          description: "Produce and execute global import-export smart contracts for goods, materials and equipment, settled in Pi.",
+        },
+      ]),
+    }],
   }),
   component: Home,
 });
