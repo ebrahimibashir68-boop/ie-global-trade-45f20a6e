@@ -30,6 +30,7 @@ export function SiteHeader() {
           {link("/contracts", "Contracts")}
           {link("/contracts/new", "New")}
           {link("/how-it-works", "How it works")}
+          {link("/trust", "Trust")}
         </nav>
         <PiConnectButton compact />
       </div>
