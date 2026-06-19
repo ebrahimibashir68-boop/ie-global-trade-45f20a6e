@@ -77,6 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "XPIwI92E0qc6n1t0heXo1wFtDKitHDE6v0-SuUtmKNA" },
       { title: "PiTrade — Global Import/Export Smart Contracts on Pi" },
       { name: "description", content: "Produce and execute global import-export smart contracts for goods, materials and equipment, settled directly from your Pi Wallet." },
       { name: "author", content: "PiTrade" },
