@@ -54,7 +54,7 @@ export function ConfirmSetupPayment() {
         amount: 1,
         memo: "PiTrade — ecosystem setup confirmation",
         metadata: { kind: "setup_confirmation", username: s.username },
-      });
+      }, s.accessToken);
       if (result.status === "completed") {
         setStatus("done");
         setDetail(`txid ${result.txid.slice(0, 12)}…`);
