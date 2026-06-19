@@ -24,8 +24,9 @@ export const Route = createFileRoute("/api/pi/verify")({
 
         if (!piRes.ok) {
           const text = await piRes.text().catch(() => "");
+          console.error("[Pi] token validation failed", piRes.status, text);
           return new Response(
-            JSON.stringify({ error: "Pi token validation failed", detail: text }),
+            JSON.stringify({ error: "Pi token validation failed" }),
             { status: 401, headers: { "Content-Type": "application/json" } },
           );
         }

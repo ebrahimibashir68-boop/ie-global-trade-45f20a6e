@@ -123,8 +123,12 @@ export type PaymentResult = {
   message?: string;
 };
 
-export async function createPayment(data: PaymentData): Promise<PaymentResult> {
+export async function createPayment(data: PaymentData, accessToken?: string): Promise<PaymentResult> {
   const ready = await initPi();
+  const authHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  };
   return new Promise((resolve) => {
     if (ready && window.Pi) {
       window.Pi.createPayment(data, {
@@ -132,7 +136,7 @@ export async function createPayment(data: PaymentData): Promise<PaymentResult> {
           try {
             const res = await fetch("/api/pi/payments/approve", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders,
               body: JSON.stringify({ paymentId }),
             });
             if (!res.ok) console.error("[Pi] approve failed", await res.text());
@@ -144,7 +148,7 @@ export async function createPayment(data: PaymentData): Promise<PaymentResult> {
           try {
             const res = await fetch("/api/pi/payments/complete", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders,
               body: JSON.stringify({ paymentId, txid }),
             });
             if (!res.ok) {
