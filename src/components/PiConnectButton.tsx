@@ -58,14 +58,30 @@ export function PiConnectButton({ compact = false }: { compact?: boolean }) {
     );
   }
 
+  if (mounted && !piReady) {
+    return (
+      <div
+        role="status"
+        className={`flex items-center gap-2 rounded-full border border-gold/40 bg-surface/70 px-3 py-1.5 ${compact ? "text-[11px]" : "text-xs"} text-muted-foreground`}
+        title="The Pi SDK only loads inside the official Pi Browser."
+      >
+        <span className="size-2 rounded-full bg-gold/60" />
+        <span>
+          <span className="font-medium text-foreground">Pi SDK not available.</span>{" "}
+          Open this app inside <span className="text-gold">Pi Browser</span> to sign in.
+        </span>
+      </div>
+    );
+  }
+
   return (
     <button
       onClick={connect}
-      disabled={loading}
+      disabled={loading || !piReady}
       className="group inline-flex items-center gap-2 rounded-full bg-gold-grad px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold transition hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
     >
       <span className="font-display text-base leading-none">π</span>
-      {loading ? "Signing in…" : !mounted ? "Sign in with Pi" : piReady ? "Sign in with Pi" : "Sign in (demo)"}
+      {loading ? "Signing in…" : !mounted ? "Sign in with Pi" : "Sign in with Pi"}
     </button>
   );
 }
