@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
 import { Route as ApiPiPaymentsCompleteRouteImport } from './routes/api/pi.payments.complete'
 import { Route as ApiPiPaymentsApproveRouteImport } from './routes/api/pi.payments.approve'
@@ -55,6 +56,11 @@ const ContractsIdRoute = ContractsIdRouteImport.update({
   path: '/contracts/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPiVerifyRoute = ApiPiVerifyRouteImport.update({
   id: '/api/pi/verify',
   path: '/api/pi/verify',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
+  '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
+  '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts': typeof ContractsIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
+  '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/trust'
+    | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/trust'
+    | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/trust'
+    | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrustRoute: typeof TrustRoute
+  ApiChatRoute: typeof ApiChatRoute
   ContractsIdRoute: typeof ContractsIdRoute
   ContractsNewRoute: typeof ContractsNewRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pi/verify': {
       id: '/api/pi/verify'
       path: '/api/pi/verify'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrustRoute: TrustRoute,
+  ApiChatRoute: ApiChatRoute,
   ContractsIdRoute: ContractsIdRoute,
   ContractsNewRoute: ContractsNewRoute,
   ContractsIndexRoute: ContractsIndexRoute,
@@ -250,13 +271,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
