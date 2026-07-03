@@ -46,6 +46,8 @@ export function AiCopilot() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, status]);
 
+  const isLoading = status === "submitted" || status === "streaming";
+
   const submit = async (text: string) => {
     const value = text.trim();
     if (!value || isLoading) return;
@@ -53,6 +55,8 @@ export function AiCopilot() {
     await sendMessage({ text: value });
     inputRef.current?.focus();
   };
+
+  if (!enabled) return null;
 
   return (
     <>
