@@ -18,15 +18,23 @@ function messageText(m: UIMessage) {
     .join("");
 }
 
+import { loadSettings, subscribeSettings } from "@/lib/app-settings";
+
 export function AiCopilot() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [enabled, setEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, status, error } = useChat({
     transport,
   });
+
+  useEffect(() => {
+    setEnabled(loadSettings().aiCopilot);
+    return subscribeSettings((s) => setEnabled(s.aiCopilot));
+  }, []);
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -38,6 +46,7 @@ export function AiCopilot() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, status]);
 
+
   const submit = async (text: string) => {
     const value = text.trim();
     if (!value || isLoading) return;
@@ -45,6 +54,8 @@ export function AiCopilot() {
     await sendMessage({ text: value });
     inputRef.current?.focus();
   };
+
+  if (!enabled) return null;
 
   return (
     <>

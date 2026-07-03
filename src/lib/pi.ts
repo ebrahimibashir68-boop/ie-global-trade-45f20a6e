@@ -8,12 +8,18 @@ export type PiUser = {
   username: string;
   accessToken: string;
   scopes?: string[];
+  walletAddress?: string;
 };
 
 export const REQUIRED_PAYMENT_SCOPES = ["username", "payments"] as const;
+export const WALLET_SCOPES = ["username", "payments", "wallet_address"] as const;
 
 export function hasPaymentsScope(user: { scopes?: string[] } | null | undefined): boolean {
   return !!user?.scopes?.includes("payments");
+}
+
+export function hasWalletScope(user: { scopes?: string[] } | null | undefined): boolean {
+  return !!user?.scopes?.includes("wallet_address");
 }
 
 export type PaymentData = {
@@ -27,7 +33,10 @@ type PiSDK = {
   authenticate: (
     scopes: string[],
     onIncompletePaymentFound: (payment: unknown) => void,
-  ) => Promise<{ user: { uid: string; username: string }; accessToken: string }>;
+  ) => Promise<{
+    user: { uid: string; username: string; wallet_address?: string };
+    accessToken: string;
+  }>;
   createPayment: (
     payment: PaymentData,
     callbacks: {
@@ -102,6 +111,7 @@ export async function authenticate(
       username: verified.username,
       accessToken: auth.accessToken,
       scopes: requested,
+      walletAddress: auth.user.wallet_address,
       verified: true,
     };
   }
@@ -112,8 +122,20 @@ export async function authenticate(
     username: "pioneer_demo",
     accessToken: "mock-access-token",
     scopes: [...scopes],
+    walletAddress: scopes.includes("wallet_address")
+      ? "GDEMO" + Math.random().toString(36).slice(2, 10).toUpperCase()
+      : undefined,
     verified: false,
   };
+}
+
+/**
+ * Re-authenticate to grant the `wallet_address` scope and return the
+ * connected wallet address. Uses the standard authenticate() flow so all
+ * scopes are re-consented together.
+ */
+export async function connectWallet(): Promise<PiVerifiedSession> {
+  return authenticate(WALLET_SCOPES);
 }
 
 export type PaymentResult = {
