@@ -18,15 +18,23 @@ function messageText(m: UIMessage) {
     .join("");
 }
 
+import { loadSettings, subscribeSettings } from "@/lib/app-settings";
+
 export function AiCopilot() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [enabled, setEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, status, error } = useChat({
     transport,
   });
+
+  useEffect(() => {
+    setEnabled(loadSettings().aiCopilot);
+    return subscribeSettings((s) => setEnabled(s.aiCopilot));
+  }, []);
 
   const isLoading = status === "submitted" || status === "streaming";
 
