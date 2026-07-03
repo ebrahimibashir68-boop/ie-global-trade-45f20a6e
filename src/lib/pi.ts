@@ -8,12 +8,18 @@ export type PiUser = {
   username: string;
   accessToken: string;
   scopes?: string[];
+  walletAddress?: string;
 };
 
 export const REQUIRED_PAYMENT_SCOPES = ["username", "payments"] as const;
+export const WALLET_SCOPES = ["username", "payments", "wallet_address"] as const;
 
 export function hasPaymentsScope(user: { scopes?: string[] } | null | undefined): boolean {
   return !!user?.scopes?.includes("payments");
+}
+
+export function hasWalletScope(user: { scopes?: string[] } | null | undefined): boolean {
+  return !!user?.scopes?.includes("wallet_address");
 }
 
 export type PaymentData = {
