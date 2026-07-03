@@ -34,7 +34,11 @@ export function SiteHeader() {
           {link("/how-it-works", "How it works")}
           {link("/trust", "Trust")}
         </nav>
-        <PiConnectButton compact />
+        <div className="flex items-center gap-2">
+          <PiWalletButton compact />
+          <PiConnectButton compact />
+          <SettingsButton compact />
+        </div>
       </div>
     </header>
   );
