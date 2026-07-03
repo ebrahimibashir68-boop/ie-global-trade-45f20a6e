@@ -111,6 +111,7 @@ export async function authenticate(
       username: verified.username,
       accessToken: auth.accessToken,
       scopes: requested,
+      walletAddress: auth.user.wallet_address,
       verified: true,
     };
   }
@@ -121,8 +122,20 @@ export async function authenticate(
     username: "pioneer_demo",
     accessToken: "mock-access-token",
     scopes: [...scopes],
+    walletAddress: scopes.includes("wallet_address")
+      ? "GDEMO" + Math.random().toString(36).slice(2, 10).toUpperCase()
+      : undefined,
     verified: false,
   };
+}
+
+/**
+ * Re-authenticate to grant the `wallet_address` scope and return the
+ * connected wallet address. Uses the standard authenticate() flow so all
+ * scopes are re-consented together.
+ */
+export async function connectWallet(): Promise<PiVerifiedSession> {
+  return authenticate(WALLET_SCOPES);
 }
 
 export type PaymentResult = {
