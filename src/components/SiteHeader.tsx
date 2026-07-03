@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { PiConnectButton } from "./PiConnectButton";
+import { PiWalletButton } from "./PiWalletButton";
+import { SettingsButton } from "./SettingsButton";
 
 export function SiteHeader() {
   const path = useRouterState({ select: (s) => s.location.pathname });
