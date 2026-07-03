@@ -33,7 +33,10 @@ type PiSDK = {
   authenticate: (
     scopes: string[],
     onIncompletePaymentFound: (payment: unknown) => void,
-  ) => Promise<{ user: { uid: string; username: string }; accessToken: string }>;
+  ) => Promise<{
+    user: { uid: string; username: string; wallet_address?: string };
+    accessToken: string;
+  }>;
   createPayment: (
     payment: PaymentData,
     callbacks: {
