@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "pitrade-mcp",
+      "version": "0.1.0",
+      "title": "PiTrade MCP"
+    },
+    "tools": [
+      {
+        "name": "get_pitrade_overview",
+        "title": "Get PiTrade overview",
+        "description": "Return a plain-text overview of the PiTrade platform: what it does, main flows, and key routes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_incoterms",
+        "title": "List supported Incoterms",
+        "description": "List the Incoterms PiTrade supports in contracts, with a short summary of buyer/seller responsibilities.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "draft_contract_clause",
+        "title": "Draft a PiTrade contract clause",
+        "description": "Given a deal description, return a structured Markdown contract clause block the user can paste into a new PiTrade contract. Does not create anything on the platform.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "goods": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Description of the goods (e.g. 'Arabica green coffee beans, grade 1')."
+            },
+            "quantity": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Numeric quantity."
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unit of measure (e.g. 'tonnes', 'units', 'boxes')."
+            },
+            "originCountry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "destinationCountry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "incoterm": {
+              "type": "string",
+              "enum": [
+                "EXW",
+                "FOB",
+                "CIF",
+                "DAP",
+                "DDP"
+              ]
+            },
+            "amountPi": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Total price in π (Pi)."
+            },
+            "deliveryWindow": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Delivery window, e.g. '30-45 days from funding'."
+            },
+            "buyer": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Buyer identifier (Pi username or company)."
+            },
+            "seller": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Seller identifier (Pi username or company)."
+            }
+          },
+          "required": [
+            "goods",
+            "quantity",
+            "unit",
+            "originCountry",
+            "destinationCountry",
+            "incoterm",
+            "amountPi",
+            "deliveryWindow",
+            "buyer",
+            "seller"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
