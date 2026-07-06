@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { createContract, type Incoterm } from "@/lib/contracts-store";
+import { createContract, type Incoterm, type PartyType } from "@/lib/contracts-store";
 import { loadSession } from "@/lib/pi-session";
 
 export const Route = createFileRoute("/contracts/new")({
