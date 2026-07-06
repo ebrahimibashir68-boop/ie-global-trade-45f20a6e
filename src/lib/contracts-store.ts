@@ -97,6 +97,46 @@ export function deleteContract(id: string) {
   write(read().filter((c) => c.id !== id));
 }
 
+// Canonical serialization for signing — excludes signatures/status/tx fields.
+export function canonicalContractSnapshot(c: Contract): string {
+  const {
+    id, title, category, goods, hsCode, quantity, unit,
+    originCountry, destinationCountry, incoterm,
+    buyerUsername, sellerUsername, buyer, seller,
+    amountPi, memo, deliveryWindow, customsDocs, complianceNotes, createdAt,
+  } = c;
+  return JSON.stringify({
+    id, title, category, goods, hsCode, quantity, unit,
+    originCountry, destinationCountry, incoterm,
+    buyerUsername, sellerUsername, buyer, seller,
+    amountPi, memo, deliveryWindow, customsDocs, complianceNotes, createdAt,
+  });
+}
+
+async function sha256(text: string): Promise<string> {
+  const buf = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export async function signContract(id: string, role: "buyer" | "seller", signerName: string) {
+  const c = getContract(id);
+  if (!c) throw new Error("Contract not found");
+  if ((c.signatures ?? []).some((s) => s.role === role)) {
+    throw new Error(`${role} has already signed this contract`);
+  }
+  const hash = await sha256(canonicalContractSnapshot(c) + "::" + role + "::" + signerName);
+  const sig: Signature = { role, signerName, signedAt: Date.now(), hash };
+  const signatures = [...(c.signatures ?? []), sig];
+  const bothSigned = signatures.some((s) => s.role === "buyer") && signatures.some((s) => s.role === "seller");
+  updateContract(id, {
+    signatures,
+    registeredAt: bothSigned ? Date.now() : c.registeredAt,
+  });
+  return sig;
+}
+
+
 export function seedIfEmpty() {
   if (read().length > 0) return;
   const samples: Contract[] = [
