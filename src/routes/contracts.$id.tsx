@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { deleteContract, getContract, updateContract, type Contract } from "@/lib/contracts-store";
+import { deleteContract, getContract, signContract, updateContract, type Contract, type Party } from "@/lib/contracts-store";
 import { createPayment } from "@/lib/pi";
 import { loadSession } from "@/lib/pi-session";
+
 
 export const Route = createFileRoute("/contracts/$id")({
   head: ({ params }) => ({
@@ -140,9 +141,34 @@ function ContractDetail() {
             </Panel>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Panel title="Buyer"><div className="text-sm">@{contract.buyerUsername}</div></Panel>
-              <Panel title="Seller"><div className="text-sm">@{contract.sellerUsername}</div></Panel>
+              <PartyPanel role="Buyer (Importer)" party={contract.buyer} fallbackUser={contract.buyerUsername} countryFallback={contract.destinationCountry} />
+              <PartyPanel role="Seller (Exporter)" party={contract.seller} fallbackUser={contract.sellerUsername} countryFallback={contract.originCountry} />
             </div>
+
+            {(contract.hsCode || contract.deliveryWindow) && (
+              <div className="grid gap-4 md:grid-cols-2">
+                {contract.hsCode && <Panel title="HS Code"><div className="font-mono text-sm">{contract.hsCode}</div></Panel>}
+                {contract.deliveryWindow && <Panel title="Delivery window"><div className="text-sm">{contract.deliveryWindow}</div></Panel>}
+              </div>
+            )}
+
+            {contract.customsDocs && contract.customsDocs.length > 0 && (
+              <Panel title="Required customs documents">
+                <ul className="flex flex-wrap gap-2">
+                  {contract.customsDocs.map((d) => (
+                    <li key={d} className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs text-gold">{d}</li>
+                  ))}
+                </ul>
+              </Panel>
+            )}
+
+            {contract.complianceNotes && (
+              <Panel title="Compliance & regulatory notes">
+                <p className="whitespace-pre-wrap text-sm text-foreground">{contract.complianceNotes}</p>
+              </Panel>
+            )}
+
+            <SignaturePanel contract={contract} />
 
             <Panel title="Lifecycle">
               <Timeline status={contract.status} />
@@ -152,6 +178,7 @@ function ContractDetail() {
                 </button>
               )}
             </Panel>
+
           </div>
 
           {/* PAYMENT SIDEBAR */}
@@ -241,3 +268,105 @@ function Timeline({ status }: { status: Contract["status"] }) {
     </ol>
   );
 }
+
+const PARTY_LABEL: Record<Party["type"], string> = {
+  individual: "Individual",
+  company: "Company",
+  institution: "Institution",
+  country: "Country / Gov agency",
+};
+
+function PartyPanel({ role, party, fallbackUser, countryFallback }: { role: string; party?: Party; fallbackUser: string; countryFallback: string }) {
+  return (
+    <Panel title={role}>
+      {party ? (
+        <div className="space-y-1.5 text-sm">
+          <div className="font-semibold text-foreground">{party.legalName || `@${fallbackUser}`}</div>
+          <div className="text-xs text-muted-foreground">
+            <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-gold">{PARTY_LABEL[party.type]}</span>
+            <span className="ml-2">{party.countryCode || countryFallback}</span>
+          </div>
+          <div className="text-xs text-muted-foreground">Pi: <span className="font-mono text-foreground">@{party.piUsername}</span></div>
+          {party.registrationNo && <div className="text-xs text-muted-foreground">Reg / ID: <span className="font-mono text-foreground">{party.registrationNo}</span></div>}
+          {party.address && <div className="text-xs text-muted-foreground">{party.address}</div>}
+        </div>
+      ) : (
+        <div className="text-sm">@{fallbackUser}</div>
+      )}
+    </Panel>
+  );
+}
+
+function SignaturePanel({ contract }: { contract: Contract }) {
+  const sigs = contract.signatures ?? [];
+  const buyerSig = sigs.find((s) => s.role === "buyer");
+  const sellerSig = sigs.find((s) => s.role === "seller");
+  const session = typeof window !== "undefined" ? loadSession() : null;
+  const myUser = session?.username;
+
+  const canSignAsBuyer = !buyerSig && myUser && myUser === contract.buyerUsername;
+  const canSignAsSeller = !sellerSig && myUser && myUser === contract.sellerUsername;
+  const [busy, setBusy] = useState<null | "buyer" | "seller">(null);
+
+  const sign = async (role: "buyer" | "seller") => {
+    const partyName = role === "buyer" ? contract.buyer?.legalName : contract.seller?.legalName;
+    const name = partyName || myUser || "";
+    const confirmed = confirm(
+      `Sign this contract as ${role.toUpperCase()} on behalf of "${name}"?\n\nThis creates a cryptographic signature (SHA-256) of the contract terms bound to your Pi identity.`,
+    );
+    if (!confirmed) return;
+    try {
+      setBusy(role);
+      await signContract(contract.id, role, name);
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Panel title="Signatures & registration">
+      <div className="grid gap-3 md:grid-cols-2">
+        {(["buyer", "seller"] as const).map((role) => {
+          const sig = role === "buyer" ? buyerSig : sellerSig;
+          const canSign = role === "buyer" ? canSignAsBuyer : canSignAsSeller;
+          const expectedUser = role === "buyer" ? contract.buyerUsername : contract.sellerUsername;
+          return (
+            <div key={role} className={`rounded-xl border p-3 ${sig ? "border-emerald-500/40 bg-emerald-500/5" : "border-border bg-surface"}`}>
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{role}</div>
+                {sig ? (
+                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">SIGNED</span>
+                ) : (
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted-foreground">Pending</span>
+                )}
+              </div>
+              {sig ? (
+                <div className="mt-2 space-y-1 text-xs">
+                  <div className="font-semibold text-foreground">{sig.signerName}</div>
+                  <div className="text-muted-foreground">{new Date(sig.signedAt).toLocaleString()}</div>
+                  <div className="truncate font-mono text-[10px] text-gold" title={sig.hash}>0x{sig.hash.slice(0, 24)}…</div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => sign(role)}
+                  disabled={!canSign || busy === role}
+                  className="mt-3 w-full rounded-full bg-gold-grad px-4 py-2 text-xs font-semibold text-primary-foreground shadow-gold disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {busy === role ? "Signing…" : canSign ? `Sign as ${role}` : `Connect as @${expectedUser} to sign`}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {contract.registeredAt && (
+        <div className="mt-4 rounded-lg border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
+          ✓ Fully signed & registered on {new Date(contract.registeredAt).toLocaleString()} — this contract is now legally binding between both parties.
+        </div>
+      )}
+    </Panel>
+  );
+}
+

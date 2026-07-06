@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { createContract, type Incoterm } from "@/lib/contracts-store";
+import { createContract, type Incoterm, type PartyType } from "@/lib/contracts-store";
 import { loadSession } from "@/lib/pi-session";
 
 export const Route = createFileRoute("/contracts/new")({
@@ -21,6 +21,22 @@ const CATEGORIES = [
   "Chemicals","Food & beverage","Logistics services",
 ];
 const INCOTERMS: Incoterm[] = ["EXW", "FOB", "CIF", "DAP", "DDP"];
+const PARTY_TYPES: { v: PartyType; label: string }[] = [
+  { v: "individual", label: "Individual" },
+  { v: "company", label: "Company" },
+  { v: "institution", label: "Institution" },
+  { v: "country", label: "Country / Gov agency" },
+];
+const CUSTOMS_DOC_OPTIONS = [
+  "Commercial Invoice",
+  "Packing List",
+  "Certificate of Origin",
+  "Bill of Lading / Airway Bill",
+  "Insurance Certificate",
+  "Import / Export License",
+  "Phytosanitary / Health Certificate",
+  "Inspection Certificate",
+];
 
 function NewContract() {
   const nav = useNavigate();
@@ -30,6 +46,7 @@ function NewContract() {
     title: "",
     category: CATEGORIES[0],
     goods: "",
+    hsCode: "",
     quantity: 1,
     unit: "tonnes",
     originCountry: "",
@@ -39,7 +56,27 @@ function NewContract() {
     sellerUsername: "",
     amountPi: 100,
     memo: "",
+    deliveryWindow: "30-45 days from funding",
+    complianceNotes: "",
+    // Buyer party
+    buyerType: "company" as PartyType,
+    buyerLegalName: "",
+    buyerCountryCode: "",
+    buyerRegNo: "",
+    buyerAddress: "",
+    // Seller party
+    sellerType: "company" as PartyType,
+    sellerLegalName: "",
+    sellerCountryCode: "",
+    sellerRegNo: "",
+    sellerAddress: "",
   });
+  const [customsDocs, setCustomsDocs] = useState<string[]>([
+    "Commercial Invoice", "Packing List", "Certificate of Origin", "Bill of Lading / Airway Bill",
+  ]);
+  const toggleDoc = (d: string) =>
+    setCustomsDocs((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
+
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -47,11 +84,42 @@ function NewContract() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const c = createContract({
-      ...form,
+      title: form.title,
+      category: form.category,
+      goods: form.goods,
+      hsCode: form.hsCode || undefined,
+      quantity: form.quantity,
+      unit: form.unit,
+      originCountry: form.originCountry,
+      destinationCountry: form.destinationCountry,
+      incoterm: form.incoterm,
+      buyerUsername: form.buyerUsername,
+      sellerUsername: form.sellerUsername,
+      amountPi: form.amountPi,
       memo: form.memo || `PiTrade ${form.title}`,
+      deliveryWindow: form.deliveryWindow || undefined,
+      complianceNotes: form.complianceNotes || undefined,
+      customsDocs,
+      buyer: {
+        type: form.buyerType,
+        legalName: form.buyerLegalName,
+        piUsername: form.buyerUsername,
+        countryCode: form.buyerCountryCode || form.destinationCountry,
+        registrationNo: form.buyerRegNo || undefined,
+        address: form.buyerAddress || undefined,
+      },
+      seller: {
+        type: form.sellerType,
+        legalName: form.sellerLegalName,
+        piUsername: form.sellerUsername,
+        countryCode: form.sellerCountryCode || form.originCountry,
+        registrationNo: form.sellerRegNo || undefined,
+        address: form.sellerAddress || undefined,
+      },
     });
     nav({ to: "/contracts/$id", params: { id: c.id } });
   };
+
 
   return (
     <div className="min-h-screen">
@@ -112,6 +180,15 @@ function NewContract() {
             </Field>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="HS Code (Harmonized System)">
+              <input value={form.hsCode} onChange={(e) => set("hsCode", e.target.value)} placeholder="e.g. 0901.11" className={input} />
+            </Field>
+            <Field label="Delivery window">
+              <input value={form.deliveryWindow} onChange={(e) => set("deliveryWindow", e.target.value)} placeholder="e.g. 30-45 days from funding" className={input} />
+            </Field>
+          </div>
+
           <Field label="Settlement amount (π)">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 font-display text-lg text-gold">π</span>
@@ -121,6 +198,71 @@ function NewContract() {
 
           <Field label="Payment memo (optional)">
             <input value={form.memo} onChange={(e) => set("memo", e.target.value)} placeholder="Visible to buyer on the Pi payment sheet" className={input} />
+          </Field>
+
+          {/* PARTIES */}
+          <fieldset className="rounded-xl border border-border/70 bg-surface p-4">
+            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">Buyer (Importer)</legend>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Party type">
+                <select value={form.buyerType} onChange={(e) => set("buyerType", e.target.value as PartyType)} className={input}>
+                  {PARTY_TYPES.map((p) => <option key={p.v} value={p.v}>{p.label}</option>)}
+                </select>
+              </Field>
+              <Field label="Legal name">
+                <input required value={form.buyerLegalName} onChange={(e) => set("buyerLegalName", e.target.value)} placeholder="Full legal name" className={input} />
+              </Field>
+              <Field label="Registration / ID number">
+                <input value={form.buyerRegNo} onChange={(e) => set("buyerRegNo", e.target.value)} placeholder="Company reg / Tax ID / Passport" className={input} />
+              </Field>
+              <Field label="Country code">
+                <input value={form.buyerCountryCode} onChange={(e) => set("buyerCountryCode", e.target.value)} placeholder="e.g. DE" className={input} />
+              </Field>
+            </div>
+            <Field label="Address">
+              <input value={form.buyerAddress} onChange={(e) => set("buyerAddress", e.target.value)} placeholder="Registered address" className={input} />
+            </Field>
+          </fieldset>
+
+          <fieldset className="rounded-xl border border-border/70 bg-surface p-4">
+            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">Seller (Exporter)</legend>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Party type">
+                <select value={form.sellerType} onChange={(e) => set("sellerType", e.target.value as PartyType)} className={input}>
+                  {PARTY_TYPES.map((p) => <option key={p.v} value={p.v}>{p.label}</option>)}
+                </select>
+              </Field>
+              <Field label="Legal name">
+                <input required value={form.sellerLegalName} onChange={(e) => set("sellerLegalName", e.target.value)} placeholder="Full legal name" className={input} />
+              </Field>
+              <Field label="Registration / ID number">
+                <input value={form.sellerRegNo} onChange={(e) => set("sellerRegNo", e.target.value)} placeholder="Company reg / Tax ID / Passport" className={input} />
+              </Field>
+              <Field label="Country code">
+                <input value={form.sellerCountryCode} onChange={(e) => set("sellerCountryCode", e.target.value)} placeholder="e.g. ET" className={input} />
+              </Field>
+            </div>
+            <Field label="Address">
+              <input value={form.sellerAddress} onChange={(e) => set("sellerAddress", e.target.value)} placeholder="Registered address" className={input} />
+            </Field>
+          </fieldset>
+
+          <Field label="Required customs documents">
+            <div className="flex flex-wrap gap-2">
+              {CUSTOMS_DOC_OPTIONS.map((d) => {
+                const on = customsDocs.includes(d);
+                return (
+                  <button type="button" key={d} onClick={() => toggleDoc(d)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition ${on ? "border-gold bg-gold/15 text-gold" : "border-border bg-surface text-muted-foreground hover:border-gold/40"}`}>
+                    {on ? "✓ " : ""}{d}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="Compliance & regulatory notes">
+            <textarea rows={3} value={form.complianceNotes} onChange={(e) => set("complianceNotes", e.target.value)} placeholder="Sanctions screening, export licenses, dual-use goods, restrictions…" className={input} />
           </Field>
 
           <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
@@ -134,6 +276,7 @@ function NewContract() {
     </div>
   );
 }
+
 
 const input = "w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none";
 

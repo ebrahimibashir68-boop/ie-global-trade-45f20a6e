@@ -4,11 +4,30 @@
 export type Incoterm = "EXW" | "FOB" | "CIF" | "DAP" | "DDP";
 export type ContractStatus = "draft" | "awaiting_payment" | "funded" | "in_transit" | "completed" | "cancelled";
 
+export type PartyType = "individual" | "company" | "institution" | "country";
+
+export type Party = {
+  type: PartyType;
+  legalName: string;
+  piUsername: string;
+  countryCode: string;
+  registrationNo?: string; // company reg / passport / gov id
+  address?: string;
+};
+
+export type Signature = {
+  role: "buyer" | "seller";
+  signerName: string;
+  signedAt: number;
+  hash: string; // sha256 of canonical contract snapshot + signer name
+};
+
 export type Contract = {
   id: string;
   title: string;
   category: string;
   goods: string;
+  hsCode?: string; // Harmonized System code
   quantity: number;
   unit: string;
   originCountry: string;
@@ -16,13 +35,21 @@ export type Contract = {
   incoterm: Incoterm;
   buyerUsername: string;
   sellerUsername: string;
+  buyer?: Party;
+  seller?: Party;
   amountPi: number;
   memo: string;
+  deliveryWindow?: string;
+  customsDocs?: string[]; // e.g. ["Commercial Invoice","Packing List","Certificate of Origin","Bill of Lading"]
+  complianceNotes?: string;
+  signatures?: Signature[];
+  registeredAt?: number; // when both parties have signed
   status: ContractStatus;
   createdAt: number;
   paymentTxid?: string;
   paymentId?: string;
 };
+
 
 const KEY = "pi_trade_contracts_v1";
 
@@ -69,6 +96,46 @@ export function updateContract(id: string, patch: Partial<Contract>) {
 export function deleteContract(id: string) {
   write(read().filter((c) => c.id !== id));
 }
+
+// Canonical serialization for signing — excludes signatures/status/tx fields.
+export function canonicalContractSnapshot(c: Contract): string {
+  const {
+    id, title, category, goods, hsCode, quantity, unit,
+    originCountry, destinationCountry, incoterm,
+    buyerUsername, sellerUsername, buyer, seller,
+    amountPi, memo, deliveryWindow, customsDocs, complianceNotes, createdAt,
+  } = c;
+  return JSON.stringify({
+    id, title, category, goods, hsCode, quantity, unit,
+    originCountry, destinationCountry, incoterm,
+    buyerUsername, sellerUsername, buyer, seller,
+    amountPi, memo, deliveryWindow, customsDocs, complianceNotes, createdAt,
+  });
+}
+
+async function sha256(text: string): Promise<string> {
+  const buf = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export async function signContract(id: string, role: "buyer" | "seller", signerName: string) {
+  const c = getContract(id);
+  if (!c) throw new Error("Contract not found");
+  if ((c.signatures ?? []).some((s) => s.role === role)) {
+    throw new Error(`${role} has already signed this contract`);
+  }
+  const hash = await sha256(canonicalContractSnapshot(c) + "::" + role + "::" + signerName);
+  const sig: Signature = { role, signerName, signedAt: Date.now(), hash };
+  const signatures = [...(c.signatures ?? []), sig];
+  const bothSigned = signatures.some((s) => s.role === "buyer") && signatures.some((s) => s.role === "seller");
+  updateContract(id, {
+    signatures,
+    registeredAt: bothSigned ? Date.now() : c.registeredAt,
+  });
+  return sig;
+}
+
 
 export function seedIfEmpty() {
   if (read().length > 0) return;
