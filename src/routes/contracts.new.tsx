@@ -21,6 +21,22 @@ const CATEGORIES = [
   "Chemicals","Food & beverage","Logistics services",
 ];
 const INCOTERMS: Incoterm[] = ["EXW", "FOB", "CIF", "DAP", "DDP"];
+const PARTY_TYPES: { v: PartyType; label: string }[] = [
+  { v: "individual", label: "Individual" },
+  { v: "company", label: "Company" },
+  { v: "institution", label: "Institution" },
+  { v: "country", label: "Country / Gov agency" },
+];
+const CUSTOMS_DOC_OPTIONS = [
+  "Commercial Invoice",
+  "Packing List",
+  "Certificate of Origin",
+  "Bill of Lading / Airway Bill",
+  "Insurance Certificate",
+  "Import / Export License",
+  "Phytosanitary / Health Certificate",
+  "Inspection Certificate",
+];
 
 function NewContract() {
   const nav = useNavigate();
@@ -30,6 +46,7 @@ function NewContract() {
     title: "",
     category: CATEGORIES[0],
     goods: "",
+    hsCode: "",
     quantity: 1,
     unit: "tonnes",
     originCountry: "",
@@ -39,7 +56,27 @@ function NewContract() {
     sellerUsername: "",
     amountPi: 100,
     memo: "",
+    deliveryWindow: "30-45 days from funding",
+    complianceNotes: "",
+    // Buyer party
+    buyerType: "company" as PartyType,
+    buyerLegalName: "",
+    buyerCountryCode: "",
+    buyerRegNo: "",
+    buyerAddress: "",
+    // Seller party
+    sellerType: "company" as PartyType,
+    sellerLegalName: "",
+    sellerCountryCode: "",
+    sellerRegNo: "",
+    sellerAddress: "",
   });
+  const [customsDocs, setCustomsDocs] = useState<string[]>([
+    "Commercial Invoice", "Packing List", "Certificate of Origin", "Bill of Lading / Airway Bill",
+  ]);
+  const toggleDoc = (d: string) =>
+    setCustomsDocs((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
+
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
