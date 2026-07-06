@@ -84,11 +84,42 @@ function NewContract() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const c = createContract({
-      ...form,
+      title: form.title,
+      category: form.category,
+      goods: form.goods,
+      hsCode: form.hsCode || undefined,
+      quantity: form.quantity,
+      unit: form.unit,
+      originCountry: form.originCountry,
+      destinationCountry: form.destinationCountry,
+      incoterm: form.incoterm,
+      buyerUsername: form.buyerUsername,
+      sellerUsername: form.sellerUsername,
+      amountPi: form.amountPi,
       memo: form.memo || `PiTrade ${form.title}`,
+      deliveryWindow: form.deliveryWindow || undefined,
+      complianceNotes: form.complianceNotes || undefined,
+      customsDocs,
+      buyer: {
+        type: form.buyerType,
+        legalName: form.buyerLegalName,
+        piUsername: form.buyerUsername,
+        countryCode: form.buyerCountryCode || form.destinationCountry,
+        registrationNo: form.buyerRegNo || undefined,
+        address: form.buyerAddress || undefined,
+      },
+      seller: {
+        type: form.sellerType,
+        legalName: form.sellerLegalName,
+        piUsername: form.sellerUsername,
+        countryCode: form.sellerCountryCode || form.originCountry,
+        registrationNo: form.sellerRegNo || undefined,
+        address: form.sellerAddress || undefined,
+      },
     });
     nav({ to: "/contracts/$id", params: { id: c.id } });
   };
+
 
   return (
     <div className="min-h-screen">
