@@ -4,11 +4,30 @@
 export type Incoterm = "EXW" | "FOB" | "CIF" | "DAP" | "DDP";
 export type ContractStatus = "draft" | "awaiting_payment" | "funded" | "in_transit" | "completed" | "cancelled";
 
+export type PartyType = "individual" | "company" | "institution" | "country";
+
+export type Party = {
+  type: PartyType;
+  legalName: string;
+  piUsername: string;
+  countryCode: string;
+  registrationNo?: string; // company reg / passport / gov id
+  address?: string;
+};
+
+export type Signature = {
+  role: "buyer" | "seller";
+  signerName: string;
+  signedAt: number;
+  hash: string; // sha256 of canonical contract snapshot + signer name
+};
+
 export type Contract = {
   id: string;
   title: string;
   category: string;
   goods: string;
+  hsCode?: string; // Harmonized System code
   quantity: number;
   unit: string;
   originCountry: string;
@@ -16,13 +35,21 @@ export type Contract = {
   incoterm: Incoterm;
   buyerUsername: string;
   sellerUsername: string;
+  buyer?: Party;
+  seller?: Party;
   amountPi: number;
   memo: string;
+  deliveryWindow?: string;
+  customsDocs?: string[]; // e.g. ["Commercial Invoice","Packing List","Certificate of Origin","Bill of Lading"]
+  complianceNotes?: string;
+  signatures?: Signature[];
+  registeredAt?: number; // when both parties have signed
   status: ContractStatus;
   createdAt: number;
   paymentTxid?: string;
   paymentId?: string;
 };
+
 
 const KEY = "pi_trade_contracts_v1";
 
