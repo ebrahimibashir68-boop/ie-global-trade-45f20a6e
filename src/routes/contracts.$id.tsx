@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { deleteContract, getContract, updateContract, type Contract } from "@/lib/contracts-store";
+import { deleteContract, getContract, signContract, updateContract, type Contract, type Party } from "@/lib/contracts-store";
 import { createPayment } from "@/lib/pi";
 import { loadSession } from "@/lib/pi-session";
+
 
 export const Route = createFileRoute("/contracts/$id")({
   head: ({ params }) => ({
