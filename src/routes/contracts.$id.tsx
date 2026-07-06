@@ -141,9 +141,34 @@ function ContractDetail() {
             </Panel>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Panel title="Buyer"><div className="text-sm">@{contract.buyerUsername}</div></Panel>
-              <Panel title="Seller"><div className="text-sm">@{contract.sellerUsername}</div></Panel>
+              <PartyPanel role="Buyer (Importer)" party={contract.buyer} fallbackUser={contract.buyerUsername} countryFallback={contract.destinationCountry} />
+              <PartyPanel role="Seller (Exporter)" party={contract.seller} fallbackUser={contract.sellerUsername} countryFallback={contract.originCountry} />
             </div>
+
+            {(contract.hsCode || contract.deliveryWindow) && (
+              <div className="grid gap-4 md:grid-cols-2">
+                {contract.hsCode && <Panel title="HS Code"><div className="font-mono text-sm">{contract.hsCode}</div></Panel>}
+                {contract.deliveryWindow && <Panel title="Delivery window"><div className="text-sm">{contract.deliveryWindow}</div></Panel>}
+              </div>
+            )}
+
+            {contract.customsDocs && contract.customsDocs.length > 0 && (
+              <Panel title="Required customs documents">
+                <ul className="flex flex-wrap gap-2">
+                  {contract.customsDocs.map((d) => (
+                    <li key={d} className="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs text-gold">{d}</li>
+                  ))}
+                </ul>
+              </Panel>
+            )}
+
+            {contract.complianceNotes && (
+              <Panel title="Compliance & regulatory notes">
+                <p className="whitespace-pre-wrap text-sm text-foreground">{contract.complianceNotes}</p>
+              </Panel>
+            )}
+
+            <SignaturePanel contract={contract} />
 
             <Panel title="Lifecycle">
               <Timeline status={contract.status} />
@@ -153,6 +178,7 @@ function ContractDetail() {
                 </button>
               )}
             </Panel>
+
           </div>
 
           {/* PAYMENT SIDEBAR */}
