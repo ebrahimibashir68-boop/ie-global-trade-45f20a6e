@@ -5,6 +5,9 @@ import { ContractCard } from "@/components/ContractCard";
 import { listContracts, seedIfEmpty, type Contract, type ContractStatus } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/contracts/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Contracts marketplace · PiTrade global trade in Pi" },
