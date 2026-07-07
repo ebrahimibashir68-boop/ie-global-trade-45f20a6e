@@ -5,6 +5,9 @@ import { ContractCard } from "@/components/ContractCard";
 import { listContracts, seedIfEmpty, type Contract, type ContractStatus } from "@/lib/contracts-store";
 
 export const Route = createFileRoute("/contracts/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Contracts marketplace · PiTrade global trade in Pi" },
@@ -38,6 +41,8 @@ const FILTERS: Array<{ k: ContractStatus | "all"; label: string }> = [
 ];
 
 function ContractsList() {
+  const { category } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filter, setFilter] = useState<ContractStatus | "all">("all");
   const [q, setQ] = useState("");
@@ -52,6 +57,7 @@ function ContractsList() {
 
   const filtered = contracts.filter((c) => {
     if (filter !== "all" && c.status !== filter) return false;
+    if (category && c.category !== category) return false;
     if (q && !(`${c.title} ${c.goods} ${c.originCountry} ${c.destinationCountry}`.toLowerCase().includes(q.toLowerCase()))) return false;
     return true;
   });
@@ -63,7 +69,17 @@ function ContractsList() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="text-[11px] uppercase tracking-[0.22em] text-gold">Marketplace</div>
-            <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">All smart contracts</h1>
+            <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
+              {category ? category : "All smart contracts"}
+            </h1>
+            {category && (
+              <button
+                onClick={() => navigate({ search: {} })}
+                className="mt-2 text-xs text-muted-foreground underline-offset-4 hover:text-gold hover:underline"
+              >
+                ← Clear category filter
+              </button>
+            )}
           </div>
           <Link to="/contracts/new" className="rounded-full bg-gold-grad px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold">
             + New contract
