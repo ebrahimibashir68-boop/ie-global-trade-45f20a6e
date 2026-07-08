@@ -1,18 +1,30 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { deleteContract, getContract, signContract, updateContract, type Contract, type Party } from "@/lib/contracts-store";
+import {
+  completeMilestone,
+  deleteContract,
+  getContract,
+  releasedPct,
+  signContract,
+  updateContract,
+  type Contract,
+  type Intermediary,
+  type Milestone,
+  type Party,
+} from "@/lib/contracts-store";
 import { createPayment } from "@/lib/pi";
 import { loadSession } from "@/lib/pi-session";
+import { openTradeDoc, type TradeDocKind } from "@/lib/trade-docs";
 
 
 export const Route = createFileRoute("/contracts/$id")({
   head: ({ params }) => ({
     meta: [
       { title: `Contract ${params.id} · PiTrade smart contract` },
-      { name: "description", content: `Trade contract ${params.id} on PiTrade — terms, route, parties and Pi Wallet settlement.` },
+      { name: "description", content: `Trade contract ${params.id} on PiTrade — terms, route, parties, shipping, customs docs and Pi Wallet settlement.` },
       { property: "og:title", content: `PiTrade Contract ${params.id}` },
-      { property: "og:description", content: "Import-export smart contract settled in Pi — route, goods, parties and on-chain payment." },
+      { property: "og:description", content: "Import-export smart contract settled in Pi — route, goods, parties, shipping and on-chain payment." },
       { property: "og:type", content: "article" },
       { property: "og:url", content: `https://ie-global-trade.lovable.app/contracts/${params.id}` },
     ],
@@ -64,37 +76,18 @@ function ContractDetail() {
 
   const pay = async () => {
     const s = loadSession();
-    if (!s) {
-      alert("Connect your Pi Wallet first.");
-      return;
-    }
+    if (!s) { alert("Connect your Pi Wallet first."); return; }
     setPaying(true);
     const res = await createPayment({
-      amount: contract.amountPi,
-      memo: contract.memo,
+      amount: contract.amountPi, memo: contract.memo,
       metadata: { contractId: contract.id, title: contract.title },
     });
     setPaying(false);
     if (res.status === "completed") {
       updateContract(contract.id, { status: "funded", paymentTxid: res.txid, paymentId: res.paymentId });
       setTx({ paymentId: res.paymentId, txid: res.txid });
-    } else if (res.status === "cancelled") {
-      alert("Payment cancelled.");
-    } else {
-      alert("Payment error: " + (res.message ?? "unknown"));
-    }
-  };
-
-  const advance = () => {
-    const next: Record<Contract["status"], Contract["status"]> = {
-      draft: "awaiting_payment",
-      awaiting_payment: "funded",
-      funded: "in_transit",
-      in_transit: "completed",
-      completed: "completed",
-      cancelled: "cancelled",
-    };
-    updateContract(contract.id, { status: next[contract.status] });
+    } else if (res.status === "cancelled") alert("Payment cancelled.");
+    else alert("Payment error: " + (res.message ?? "unknown"));
   };
 
   return (
@@ -110,15 +103,12 @@ function ContractDetail() {
             <div className="mt-2 font-mono text-xs text-muted-foreground">{contract.id}</div>
           </div>
           <button
-            onClick={() => { deleteContract(contract.id); nav({ to: "/contracts" }); }}
+            onClick={() => { if (confirm("Delete this contract?")) { deleteContract(contract.id); nav({ to: "/contracts" }); } }}
             className="text-xs text-muted-foreground hover:text-destructive"
-          >
-            Delete
-          </button>
+          >Delete</button>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {/* TERMS */}
           <div className="space-y-4 lg:col-span-2">
             <Panel title="Trade route">
               <div className="flex items-center justify-between gap-4 text-foreground">
@@ -145,12 +135,19 @@ function ContractDetail() {
               <PartyPanel role="Seller (Exporter)" party={contract.seller} fallbackUser={contract.sellerUsername} countryFallback={contract.originCountry} />
             </div>
 
-            {(contract.hsCode || contract.deliveryWindow) && (
-              <div className="grid gap-4 md:grid-cols-2">
+            {(contract.hsCode || contract.deliveryWindow || contract.currency) && (
+              <div className="grid gap-4 md:grid-cols-3">
                 {contract.hsCode && <Panel title="HS Code"><div className="font-mono text-sm">{contract.hsCode}</div></Panel>}
                 {contract.deliveryWindow && <Panel title="Delivery window"><div className="text-sm">{contract.deliveryWindow}</div></Panel>}
+                {contract.currency && contract.fiatEquivalent ? (
+                  <Panel title="Reference value"><div className="text-sm">{contract.currency} {contract.fiatEquivalent.toLocaleString()}</div></Panel>
+                ) : null}
               </div>
             )}
+
+            {contract.shipping && <ShippingPanel c={contract} />}
+            {contract.insurance && <InsurancePanel c={contract} />}
+            {contract.intermediaries && contract.intermediaries.length > 0 && <IntermediariesPanel items={contract.intermediaries} />}
 
             {contract.customsDocs && contract.customsDocs.length > 0 && (
               <Panel title="Required customs documents">
@@ -162,6 +159,8 @@ function ContractDetail() {
               </Panel>
             )}
 
+            <DocsPanel c={contract} />
+
             {contract.complianceNotes && (
               <Panel title="Compliance & regulatory notes">
                 <p className="whitespace-pre-wrap text-sm text-foreground">{contract.complianceNotes}</p>
@@ -169,16 +168,7 @@ function ContractDetail() {
             )}
 
             <SignaturePanel contract={contract} />
-
-            <Panel title="Lifecycle">
-              <Timeline status={contract.status} />
-              {contract.status !== "completed" && contract.status !== "cancelled" && contract.status !== "awaiting_payment" && (
-                <button onClick={advance} className="mt-4 rounded-full border border-gold/40 bg-surface px-4 py-2 text-xs font-medium text-gold hover:bg-gold/10">
-                  Advance status →
-                </button>
-              )}
-            </Panel>
-
+            <MilestonesPanel c={contract} />
           </div>
 
           {/* PAYMENT SIDEBAR */}
@@ -186,14 +176,15 @@ function ContractDetail() {
             <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-surface to-surface-2 p-5 shadow-card">
               <div className="text-[11px] uppercase tracking-[0.18em] text-gold">Settlement</div>
               <div className="mt-2 font-display text-4xl font-semibold text-gold">π {contract.amountPi.toLocaleString()}</div>
-              <div className="mt-1 text-xs text-muted-foreground">Paid directly from Pi Wallet to PiTrade escrow.</div>
+              <div className="mt-1 text-xs text-muted-foreground">Paid from Pi Wallet into PiTrade escrow.</div>
+
+              {contract.status !== "awaiting_payment" && (
+                <EscrowMeter c={contract} />
+              )}
 
               {contract.status === "awaiting_payment" && (
-                <button
-                  onClick={pay}
-                  disabled={paying}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-grad px-5 py-3 text-sm font-semibold text-primary-foreground shadow-gold disabled:opacity-60"
-                >
+                <button onClick={pay} disabled={paying}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-grad px-5 py-3 text-sm font-semibold text-primary-foreground shadow-gold disabled:opacity-60">
                   {paying ? "Opening Pi Wallet…" : "Pay with Pi Wallet"}
                 </button>
               )}
@@ -224,6 +215,8 @@ function ContractDetail() {
   );
 }
 
+/* --------------------------------- panels --------------------------------- */
+
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
@@ -242,32 +235,186 @@ function Row({ k, v }: { k: string; v: React.ReactNode }) {
   );
 }
 
-const STEPS: Array<{ k: Contract["status"]; label: string }> = [
-  { k: "awaiting_payment", label: "Awaiting payment" },
-  { k: "funded", label: "Funded" },
-  { k: "in_transit", label: "In transit" },
-  { k: "completed", label: "Completed" },
-];
-
-function Timeline({ status }: { status: Contract["status"] }) {
-  const activeIdx = STEPS.findIndex((s) => s.k === status);
+function KV({ k, v }: { k: string; v?: React.ReactNode }) {
+  if (v === undefined || v === null || v === "") return null;
   return (
-    <ol className="flex items-center justify-between gap-2">
-      {STEPS.map((s, i) => {
-        const done = i <= activeIdx;
-        return (
-          <li key={s.k} className="flex flex-1 flex-col items-center text-center">
-            <div className={`grid size-7 place-items-center rounded-full text-[11px] font-semibold ${done ? "bg-gold text-primary-foreground shadow-gold" : "border border-border bg-surface text-muted-foreground"}`}>
-              {i + 1}
-            </div>
-            <div className={`mt-2 text-[10px] uppercase tracking-wider ${done ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</div>
-            {i < STEPS.length - 1 && <div className={`absolute hidden ${done ? "bg-gold" : "bg-border"}`} />}
-          </li>
-        );
-      })}
-    </ol>
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{k}</div>
+      <div className="mt-0.5 text-sm text-foreground">{v}</div>
+    </div>
   );
 }
+
+function ShippingPanel({ c }: { c: Contract }) {
+  const s = c.shipping!;
+  return (
+    <Panel title={`Shipping · ${s.mode.toUpperCase()}`}>
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <KV k="Carrier" v={s.carrier} />
+        <KV k="Vessel / Flight" v={s.vesselOrFlight} />
+        <KV k="Container no." v={s.containerNo ? <span className="font-mono">{s.containerNo}</span> : undefined} />
+        <KV k="B/L or AWB" v={s.bolAwbNo ? <span className="font-mono">{s.bolAwbNo}</span> : undefined} />
+        <KV k="Port of loading" v={s.portOfLoading} />
+        <KV k="Port of discharge" v={s.portOfDischarge} />
+        <KV k="ETD" v={s.etd} />
+        <KV k="ETA" v={s.eta} />
+        <KV k="Packages" v={s.packageCount?.toLocaleString()} />
+        <KV k="Gross wt" v={s.grossWeightKg ? `${s.grossWeightKg.toLocaleString()} kg` : undefined} />
+        <KV k="Net wt" v={s.netWeightKg ? `${s.netWeightKg.toLocaleString()} kg` : undefined} />
+        <KV k="Volume" v={s.volumeM3 ? `${s.volumeM3} m³` : undefined} />
+      </div>
+      {s.trackingUrl && (
+        <a href={s.trackingUrl} target="_blank" rel="noreferrer noopener"
+           className="mt-4 inline-flex items-center gap-1 rounded-full border border-gold/40 bg-surface px-3 py-1.5 text-xs text-gold hover:bg-gold/10">
+          Track shipment ↗
+        </a>
+      )}
+    </Panel>
+  );
+}
+
+function InsurancePanel({ c }: { c: Contract }) {
+  const i = c.insurance!;
+  return (
+    <Panel title="Cargo insurance">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        <KV k="Insurer" v={i.insurer} />
+        <KV k="Policy no." v={i.policyNo ? <span className="font-mono">{i.policyNo}</span> : undefined} />
+        <KV k="Coverage" v={i.coveragePi ? `π ${i.coveragePi.toLocaleString()}` : undefined} />
+        <KV k="Clauses" v={i.clauses} />
+      </div>
+    </Panel>
+  );
+}
+
+const IM_LABEL: Record<Intermediary["role"], string> = {
+  forwarder: "Freight forwarder",
+  broker: "Customs broker",
+  inspector: "Inspection agent",
+};
+
+function IntermediariesPanel({ items }: { items: Intermediary[] }) {
+  return (
+    <Panel title="Intermediaries">
+      <div className="grid gap-3 md:grid-cols-2">
+        {items.map((im, i) => (
+          <div key={i} className="rounded-xl border border-border bg-surface p-3">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-gold">{IM_LABEL[im.role]}</div>
+            <div className="mt-1 text-sm font-semibold text-foreground">{im.name}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {im.countryCode && <span>{im.countryCode}</span>}
+              {im.licenseNo && <span> · Lic. <span className="font-mono">{im.licenseNo}</span></span>}
+            </div>
+            {im.contact && <div className="mt-1 text-xs text-muted-foreground">{im.contact}</div>}
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+const DOC_BUTTONS: { kind: TradeDocKind; label: string }[] = [
+  { kind: "commercial_invoice", label: "Commercial Invoice" },
+  { kind: "packing_list", label: "Packing List" },
+  { kind: "certificate_of_origin", label: "Certificate of Origin" },
+  { kind: "bill_of_lading", label: "Bill of Lading (proforma)" },
+  { kind: "insurance_certificate", label: "Insurance Certificate" },
+];
+
+function DocsPanel({ c }: { c: Contract }) {
+  return (
+    <Panel title="Generate trade documents">
+      <p className="text-xs text-muted-foreground">
+        Print-ready documents populated from this contract. Open, review, then use your browser's <em>Save as PDF</em>.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {DOC_BUTTONS.map((d) => (
+          <button key={d.kind} onClick={() => openTradeDoc(d.kind, c)}
+            className="rounded-full border border-gold/40 bg-surface px-3 py-1.5 text-xs text-gold hover:bg-gold/10">
+            📄 {d.label}
+          </button>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function EscrowMeter({ c }: { c: Contract }) {
+  const pct = releasedPct(c);
+  const releasedPi = Math.round((c.amountPi * pct) / 100);
+  return (
+    <div className="mt-5 rounded-xl bg-surface-2 p-3">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span>Escrow released</span>
+        <span className="text-gold">{pct}%</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
+        <div className="h-full bg-gold transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-2 text-xs text-foreground">π {releasedPi.toLocaleString()} released of π {c.amountPi.toLocaleString()}</div>
+    </div>
+  );
+}
+
+function MilestonesPanel({ c }: { c: Contract }) {
+  const session = typeof window !== "undefined" ? loadSession() : null;
+  const me = session?.username ?? "";
+  const canAct = me === c.buyerUsername || me === c.sellerUsername;
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const ms = c.milestones ?? [];
+
+  const mark = async (m: Milestone) => {
+    if (!canAct) { alert("Connect as buyer or seller to mark milestones."); return; }
+    if (!confirm(`Mark "${m.label}" as complete? This releases ${m.releasePct}% of escrow to the seller.`)) return;
+    try {
+      setBusy(m.key);
+      completeMilestone(c.id, m.key, me);
+    } finally { setBusy(null); }
+  };
+
+  return (
+    <Panel title="Escrow milestones (LC-style release)">
+      <ol className="space-y-3">
+        {ms.map((m, i) => {
+          const done = !!m.completedAt;
+          return (
+            <li key={m.key} className={`flex items-start gap-3 rounded-xl border p-3 ${done ? "border-emerald-500/40 bg-emerald-500/5" : "border-border bg-surface"}`}>
+              <div className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${done ? "bg-emerald-500 text-white" : "border border-border text-muted-foreground"}`}>
+                {done ? "✓" : i + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <div className="text-sm font-semibold text-foreground">{m.label}</div>
+                  <div className="text-[11px] font-mono text-gold">releases {m.releasePct}%</div>
+                </div>
+                {m.requiredDocs && m.requiredDocs.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {m.requiredDocs.map((d) => (
+                      <span key={d} className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-muted-foreground">📄 {d}</span>
+                    ))}
+                  </div>
+                )}
+                {done ? (
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    Completed {new Date(m.completedAt!).toLocaleString()}{m.completedBy ? ` · by ${m.completedBy}` : ""}
+                  </div>
+                ) : (
+                  <button onClick={() => mark(m)} disabled={busy === m.key || !canAct}
+                    className="mt-2 rounded-full bg-gold-grad px-3 py-1 text-[11px] font-semibold text-primary-foreground shadow-gold disabled:opacity-40">
+                    {busy === m.key ? "…" : "Mark complete & release"}
+                  </button>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </Panel>
+  );
+}
+
+/* -------------------------- signatures / parties -------------------------- */
 
 const PARTY_LABEL: Record<Party["type"], string> = {
   individual: "Individual",
@@ -320,9 +467,7 @@ function SignaturePanel({ contract }: { contract: Contract }) {
       await signContract(contract.id, role, name);
     } catch (e) {
       alert((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
+    } finally { setBusy(null); }
   };
 
   return (
@@ -369,4 +514,3 @@ function SignaturePanel({ contract }: { contract: Contract }) {
     </Panel>
   );
 }
-
