@@ -10,8 +10,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "PiTrade — Global Import/Export Smart Contracts on Pi" },
       { name: "description", content: "Create, sign and settle international trade contracts in Pi. Direct Pi Wallet connection and user-to-app payments." },
-      { property: "og:title", content: "PiTrade — Global Import/Export on Pi" },
-      { property: "og:description", content: "Smart contracts for goods, materials and equipment, settled in Pi." },
+      { property: "og:title", content: "PiTrade — Global Import/Export Smart Contracts on Pi" },
+      { property: "og:description", content: "Create, sign and settle international trade contracts in Pi. Direct Pi Wallet connection and user-to-app payments." },
       { property: "og:url", content: "https://ie-global-trade.lovable.app/" },
     ],
     links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/" }],
