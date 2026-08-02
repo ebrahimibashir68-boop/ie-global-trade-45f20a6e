@@ -103,7 +103,7 @@ function ContractDetail() {
             <div className="mt-2 font-mono text-xs text-muted-foreground">{contract.id}</div>
           </div>
           <button
-            onClick={() => { if (confirm("Delete this contract?")) { deleteContract(contract.id); nav({ to: "/contracts" }); } }}
+            onClick={() => { if (confirm("Delete this contract?")) { deleteContract(contract.id); nav({ to: "/contracts", search: { category: undefined } }); } }}
             className="text-xs text-muted-foreground hover:text-destructive"
           >Delete</button>
         </div>

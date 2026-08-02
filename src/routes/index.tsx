@@ -128,7 +128,7 @@ function Home() {
           ].map((c) => (
             <Link
               key={c}
-              to="/contracts" search={{ category: undefined }}
+              to="/contracts"
               search={{ category: c }}
               className="group flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-surface px-4 py-5 text-sm text-foreground transition hover:border-gold/60 hover:bg-surface-2 hover:-translate-y-0.5"
               aria-label={`Browse ${c} contracts and services`}
