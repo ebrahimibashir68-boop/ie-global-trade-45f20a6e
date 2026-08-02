@@ -36,7 +36,7 @@ export const Route = createFileRoute("/contracts/$id")({
       <SiteHeader />
       <div className="mx-auto max-w-2xl px-5 py-20 text-center">
         <h1 className="font-display text-3xl">Contract not found</h1>
-        <Link to="/contracts" className="mt-4 inline-block text-gold underline">Back to marketplace</Link>
+        <Link to="/contracts" search={{ category: undefined }} className="mt-4 inline-block text-gold underline">Back to marketplace</Link>
       </div>
     </div>
   ),
@@ -94,7 +94,7 @@ function ContractDetail() {
     <div className="min-h-screen">
       <SiteHeader />
       <div className="mx-auto max-w-5xl px-5 py-10">
-        <Link to="/contracts" className="text-xs text-muted-foreground hover:text-gold">← Marketplace</Link>
+        <Link to="/contracts" search={{ category: undefined }} className="text-xs text-muted-foreground hover:text-gold">← Marketplace</Link>
 
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -103,7 +103,7 @@ function ContractDetail() {
             <div className="mt-2 font-mono text-xs text-muted-foreground">{contract.id}</div>
           </div>
           <button
-            onClick={() => { if (confirm("Delete this contract?")) { deleteContract(contract.id); nav({ to: "/contracts" }); } }}
+            onClick={() => { if (confirm("Delete this contract?")) { deleteContract(contract.id); nav({ to: "/contracts", search: { category: undefined } }); } }}
             className="text-xs text-muted-foreground hover:text-destructive"
           >Delete</button>
         </div>

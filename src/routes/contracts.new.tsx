@@ -385,7 +385,7 @@ function NewContract() {
           </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
-            <button type="button" onClick={() => nav({ to: "/contracts" })} className="rounded-full px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
+            <button type="button" onClick={() => nav({ to: "/contracts", search: { category: undefined } })} className="rounded-full px-5 py-2.5 text-sm text-muted-foreground hover:text-foreground">Cancel</button>
             <button type="submit" className="rounded-full bg-gold-grad px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold">
               Create contract
             </button>

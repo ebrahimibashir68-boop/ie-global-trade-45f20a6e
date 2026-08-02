@@ -83,7 +83,7 @@ function Home() {
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12m0 0l-5-5m5 5l-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             </Link>
             <Link
-              to="/contracts"
+              to="/contracts" search={{ category: undefined }}
               className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-6 py-3 text-sm font-medium text-foreground transition hover:border-gold/50"
             >
               Browse marketplace
@@ -147,7 +147,7 @@ function Home() {
             <div className="text-[11px] uppercase tracking-[0.22em] text-gold">Live marketplace</div>
             <h2 className="mt-2 font-display text-3xl font-semibold">Recently published contracts.</h2>
           </div>
-          <Link to="/contracts" className="text-sm text-muted-foreground underline-offset-4 hover:text-gold hover:underline">View all →</Link>
+          <Link to="/contracts" search={{ category: undefined }} className="text-sm text-muted-foreground underline-offset-4 hover:text-gold hover:underline">View all →</Link>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {contracts.slice(0, 6).map((c) => (

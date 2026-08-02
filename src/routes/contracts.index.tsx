@@ -74,7 +74,7 @@ function ContractsList() {
             </h1>
             {category && (
               <button
-                onClick={() => navigate({ search: {} })}
+                onClick={() => navigate({ search: { category: undefined } })}
                 className="mt-2 text-xs text-muted-foreground underline-offset-4 hover:text-gold hover:underline"
               >
                 ← Clear category filter
