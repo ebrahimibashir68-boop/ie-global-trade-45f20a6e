@@ -29,7 +29,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/contracts" });
+      if (data.session) navigate({ to: "/contracts", search: { category: undefined } });
     });
   }, [navigate]);
 
@@ -53,7 +53,7 @@ function AuthPage() {
         if (error) throw error;
       }
       const { data } = await supabase.auth.getSession();
-      if (data.session) navigate({ to: "/contracts" });
+      if (data.session) navigate({ to: "/contracts", search: { category: undefined } });
       else toast.info("Check your inbox to confirm your email address.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -71,7 +71,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/contracts" });
+    navigate({ to: "/contracts", search: { category: undefined } });
   }
 
   return (
