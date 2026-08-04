@@ -29,18 +29,22 @@ export function AiCopilot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setToken(data.session?.access_token ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setToken(s?.access_token ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
         body: { agent },
-        headers: async () => {
-          const { data } = await supabase.auth.getSession();
-          const token = data.session?.access_token;
-          return token ? { Authorization: `Bearer ${token}` } : {};
-        },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       }),
-    [agent],
+    [agent, token],
   );
 
   const { messages, sendMessage, status, error, setMessages } = useChat({ id: agent, transport });
