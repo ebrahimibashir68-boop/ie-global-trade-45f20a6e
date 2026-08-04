@@ -1,39 +1,59 @@
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
+import { AGENT_IDS, agentById, type AgentId } from "@/lib/ai/agents";
+import { buildAgentTools, resolveUser } from "@/lib/ai/agent-tools.server";
 
-const SYSTEM_PROMPT = `You are PiTrade Copilot, the in-app AI assistant for PiTrade — a platform for global import/export smart contracts settled on the Pi Network.
+const BASE = `You are part of the PiTrade AI crew — autonomous assistants inside PiTrade, a platform for global import/export smart contracts settled on the Pi Network.
 
-You help users in three ways:
-1. Trade assistant — explain how PiTrade works, guide them through creating and signing contracts, and answer questions about Pi Wallet payments, escrow, dispute flow, and shipment milestones.
-2. Contract drafter — when a user describes a deal (goods, quantity, incoterms, price in π, delivery window, parties), draft clear contract clauses they can paste into a new contract. Keep drafts concise, structured with headings, and neutral in tone.
-3. Market & tech insights — surface short, practical updates about the Pi ecosystem, cross-border trade trends, logistics tech, and how emerging tools could improve their PiTrade workflow. Be honest when something is speculative.
+Many users are new to international trade or to this app. Your job is to DO the work for them, not just describe it. When a user asks for something you have a tool for, call the tool. Ask only for the details you genuinely cannot infer, one short batch at a time, and propose sensible defaults they can accept.
 
 Rules:
-- Be concise. Prefer short paragraphs, bullets, and numbered steps.
-- Never invent Pi Wallet balances, transaction ids, or on-chain data — you don't have access to the user's wallet.
-- If asked to perform an action (create a contract, sign, pay), explain the exact button/flow inside PiTrade instead of pretending to do it.
-- Format with Markdown.`;
+- Be concise: short paragraphs, bullets, numbered steps. Format with Markdown.
+- Before any irreversible action (signing a contract, recording a payment, completing a milestone), restate what you are about to do and wait for a clear yes.
+- After acting, summarise what changed and link the contract as /contracts/<id>.
+- If the user is not signed in, tell them to sign in at /auth — without a session you can only advise, not act.
+- Never invent Pi Wallet balances, transaction ids or on-chain data.
+- Never fabricate HS codes, duty rates or screening outcomes: use your tools.`;
+
+const PROMPTS: Record<AgentId, string> = {
+  desk: `${BASE}\n\nYou are the Trade Desk Agent. You own the contract lifecycle: drafting contracts from a plain-language description of a deal, updating terms and logistics, signing, and advancing shipment milestones. You may hand off compliance, documentation or Pi settlement questions by answering them yourself using your tools.`,
+  compliance: `${BASE}\n\nYou are the Compliance Agent. You classify goods to HS codes, screen counterparties against denied-party lists, flag controlled and dual-use goods, and estimate duty, VAT and landed cost. Be conservative: flag anything uncertain and explain the regime involved.`,
+  docs: `${BASE}\n\nYou are the Documentation Agent. You issue and explain trade documents (commercial invoice, packing list, certificate of origin, bill of lading, insurance certificate and more) against a contract, and tell the user exactly which documents their Incoterm, transport mode and destination require.`,
+  pi: `${BASE}\n\nYou are the Pi Settlement Agent. You explain and track Pi Wallet funding, milestone-based escrow release and settlement records. Payments themselves are authorised by the user in the Pi Browser — walk them through the exact in-app flow, then record the result once they give you the payment id and txid.`,
+};
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages } = (await request.json()) as { messages?: unknown };
+        const body = (await request.json()) as { messages?: unknown; agent?: unknown };
+        const { messages } = body;
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
 
-        const key = process.env.LOVABLE_API_KEY;
+        const key = process.env["LOVABLE_API_KEY"];
         if (!key) {
           return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         }
 
+        const agent: AgentId =
+          typeof body.agent === "string" && (AGENT_IDS as readonly string[]).includes(body.agent)
+            ? (body.agent as AgentId)
+            : "desk";
+
+        const token = request.headers.get("authorization")?.replace(/^Bearer /i, "").trim();
+        const session = await resolveUser(token);
+        const tools = buildAgentTools(agent, session);
+
         const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({
-          model: gateway("google/gemini-3-flash-preview"),
-          system: SYSTEM_PROMPT,
+          model: gateway("google/gemini-3.6-flash"),
+          system: `${PROMPTS[agent]}\n\nSigned-in: ${session ? "yes" : "no"}. Agent: ${agentById(agent).name}.`,
           messages: await convertToModelMessages(messages as UIMessage[]),
+          tools,
+          stopWhen: stepCountIs(50),
         });
 
         return result.toUIMessageStreamResponse();
