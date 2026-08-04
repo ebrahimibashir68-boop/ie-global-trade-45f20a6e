@@ -116,7 +116,7 @@ function contractTools(sb: Client, userId: string): ToolSet {
       }),
       execute: async ({ status }) => {
         let q = sb.from("trade_contracts").select(CONTRACT_FIELDS).order("created_at", { ascending: false }).limit(25);
-        if (status) q = q.eq("status", status);
+        if (status) q = q.eq("status", status as never);
         const { data, error } = await q;
         if (error) throw new Error(error.message);
         return { contracts: data ?? [] };
