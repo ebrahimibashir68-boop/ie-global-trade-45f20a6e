@@ -1,7 +1,7 @@
 // Client-safe registry of the PiTrade AI agents. The chat route validates the
 // selected agent id against this list and picks the matching system prompt.
 
-export const AGENT_IDS = ["desk", "compliance", "docs", "pi"] as const;
+export const AGENT_IDS = ["desk", "compliance", "docs", "pi", "openmind", "robopay"] as const;
 export type AgentId = (typeof AGENT_IDS)[number];
 
 export interface AgentSpec {
@@ -59,6 +59,30 @@ export const AGENTS: AgentSpec[] = [
       "How do I fund escrow from my Pi Wallet?",
       "What's the escrow release schedule on my latest contract?",
       "Record the Pi payment I just made against contract PT-…",
+    ],
+  },
+  {
+    id: "openmind",
+    name: "OpenMind Bot",
+    tagline: "Does it all, end to end",
+    blurb:
+      "A generalist bot for users new to trade or to PiTrade: explains the platform, plans a full deal and then executes every step across contracts, compliance, documents and Pi settlement.",
+    suggestions: [
+      "I've never exported before — walk me through my first deal and set it up for me.",
+      "Plan and execute a full import of 10 tonnes of rice from IN to AE for me.",
+      "What can this app do for my company? Then do the first step.",
+    ],
+  },
+  {
+    id: "robopay",
+    name: "RoboPay Bot",
+    tagline: "Automated Pi payments & escrow",
+    blurb:
+      "Handles the money side automatically: checks escrow funding, prepares Pi Wallet payments, records settlements and reconciles milestone releases.",
+    suggestions: [
+      "Check escrow status across all my contracts and tell me what to pay next.",
+      "Prepare the Pi payment for my latest contract.",
+      "Record the Pi payment I just approved and release the matching milestone.",
     ],
   },
 ];
