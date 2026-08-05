@@ -1,0 +1,1 @@
+revoke all on function public.is_contract_party(uuid) from public, anon, authenticated;
