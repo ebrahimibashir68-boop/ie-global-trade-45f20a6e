@@ -575,7 +575,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_contract_party: { Args: { _contract_id: string }; Returns: boolean }
     }
     Enums: {
       contract_status:
