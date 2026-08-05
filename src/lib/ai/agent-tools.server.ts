@@ -421,6 +421,10 @@ export function buildAgentTools(agent: AgentId, session: { sb: Client; userId: s
       return { ...base, list_contracts: contracts["list_contracts"]!, get_contract: contracts["get_contract"]!, ...documentTools(sb, userId) };
     case "pi":
       return { ...base, list_contracts: contracts["list_contracts"]!, get_contract: contracts["get_contract"]!, ...piTools(sb, userId) };
+    case "robopay":
+      return { ...base, ...contracts, ...piTools(sb, userId) };
+    case "openmind":
+      return { ...base, ...contracts, ...complianceTools(sb, userId), ...documentTools(sb, userId), ...piTools(sb, userId) };
     default:
       return { ...base, ...contracts, ...complianceTools(sb, userId), ...documentTools(sb, userId), ...piTools(sb, userId) };
   }
