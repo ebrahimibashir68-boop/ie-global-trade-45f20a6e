@@ -140,8 +140,12 @@ function ContractDetail() {
                 {contract.hsCode && <Panel title="HS Code"><div className="font-mono text-sm">{contract.hsCode}</div></Panel>}
                 {contract.deliveryWindow && <Panel title="Delivery window"><div className="text-sm">{contract.deliveryWindow}</div></Panel>}
                 {contract.currency && contract.fiatEquivalent ? (
-                  <Panel title="Reference value"><div className="text-sm">{contract.currency} {contract.fiatEquivalent.toLocaleString()}</div></Panel>
+                  <Panel title="Customs reference (non-binding)">
+                    <div className="text-sm">{contract.currency} {contract.fiatEquivalent.toLocaleString()}</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">Settlement is in π only</div>
+                  </Panel>
                 ) : null}
+
               </div>
             )}
 
