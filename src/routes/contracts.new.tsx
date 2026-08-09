@@ -224,19 +224,24 @@ function NewContract() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Settlement amount (π)">
+            <Field label="Contract value — settled in π">
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-display text-lg text-gold">π</span>
                 <input type="number" min={0} step="0.01" required value={form.amountPi} onChange={(e) => set("amountPi", Number(e.target.value))} className={`${input} pl-9`} />
               </div>
             </Field>
-            <Field label="Reference currency">
+            <Field label="Customs reference currency (indicative)">
               <input value={form.currency} onChange={(e) => set("currency", e.target.value)} placeholder="USD" className={input} />
             </Field>
-            <Field label="Reference value">
+            <Field label="Customs reference value (indicative)">
               <input type="number" min={0} step="0.01" value={form.fiatEquivalent} onChange={(e) => set("fiatEquivalent", Number(e.target.value))} className={input} />
             </Field>
           </div>
+          <p className="-mt-2 text-[11px] text-muted-foreground">
+            π is the sole settlement currency on PiTrade. The fiat figures are non-binding and used
+            only for customs valuation, duty and VAT estimates.
+          </p>
+
 
           <Field label="Payment memo (optional)">
             <input value={form.memo} onChange={(e) => set("memo", e.target.value)} placeholder="Visible to buyer on the Pi payment sheet" className={input} />
