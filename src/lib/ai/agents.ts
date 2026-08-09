@@ -20,7 +20,7 @@ export const AGENTS: AgentSpec[] = [
     blurb:
       "Creates draft contracts, updates terms, signs on your behalf and moves shipment milestones forward.",
     suggestions: [
-      "Create a contract to import 20 tonnes of Arabica coffee from BR to AE, CIF, 12,000 USD, 4000 π — I'm the buyer.",
+      "Create a contract to import 20 tonnes of Arabica coffee from BR to AE, CIF, 4,000 π — I'm the buyer.",
       "Show me my contracts and what needs my attention.",
       "Advance the next milestone on my latest contract.",
     ],

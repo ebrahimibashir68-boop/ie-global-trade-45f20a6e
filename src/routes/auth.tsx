@@ -1,17 +1,26 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { SiteHeader } from "@/components/SiteHeader";
+import { authenticate, initPi, REQUIRED_PAYMENT_SCOPES } from "@/lib/pi";
+import { loadSession, saveSession } from "@/lib/pi-session";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — PiTrade Trade Desk" },
-      { name: "description", content: "Sign in to the PiTrade desk to draft, screen, execute and settle cross-border import/export contracts in Pi." },
-      { property: "og:title", content: "Sign in — PiTrade Trade Desk" },
-      { property: "og:description", content: "Access your trade desk: contracts, documentary escrow, compliance screening and Pi settlement." },
+      { title: "Sign in with Pi — PiTrade Trade Desk" },
+      {
+        name: "description",
+        content:
+          "Sign in to the PiTrade desk with your Pi Network account to draft, screen, execute and settle cross-border import/export contracts in Pi.",
+      },
+      { property: "og:title", content: "Sign in with Pi — PiTrade Trade Desk" },
+      {
+        property: "og:description",
+        content:
+          "Pi is the only identity on PiTrade: one Pi account for contracts, documentary escrow and π settlement.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -21,125 +30,81 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [piReady, setPiReady] = useState<boolean | null>(null);
+
+  const goDesk = useCallback(
+    () => navigate({ to: "/contracts", search: { category: undefined } }),
+    [navigate],
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/contracts", search: { category: undefined } });
+      if (data.session) goDesk();
     });
-  }, [navigate]);
+    initPi().then(setPiReady);
+  }, [goDesk]);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function signInWithPi() {
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { display_name: name || email.split("@")[0] },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. You can start trading.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+      const user = await authenticate(REQUIRED_PAYMENT_SCOPES);
+      saveSession(user);
+      if (!user.verified) {
+        toast.info("Preview mode — open PiTrade in Pi Browser to sign in for real.");
+        return;
       }
-      const { data } = await supabase.auth.getSession();
-      if (data.session) navigate({ to: "/contracts", search: { category: undefined } });
-      else toast.info("Check your inbox to confirm your email address.");
+      toast.success(`Welcome, @${user.username}`);
+      goDesk();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed");
+      toast.error(err instanceof Error ? err.message : "Pi sign-in failed");
     } finally {
       setBusy(false);
     }
   }
 
-  async function google() {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: "/contracts", search: { category: undefined } });
-  }
+  const existing = typeof window !== "undefined" ? loadSession() : null;
 
   return (
     <div className="min-h-screen bg-hero">
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col px-5 py-16">
-        <h1 className="font-display text-2xl font-semibold">
-          {mode === "signin" ? "Sign in to your trade desk" : "Open a trade desk"}
-        </h1>
+        <h1 className="font-display text-2xl font-semibold">Sign in with Pi</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Contracts, documentary escrow and Pi settlement are private to the parties on each deal.
+          PiTrade runs entirely inside the Pi ecosystem. Your Pi Network account is your trade
+          identity, and every contract is settled in π — there are no separate passwords or
+          third-party logins.
         </p>
 
         <button
-          onClick={google}
-          className="mt-6 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium transition hover:bg-surface-2"
+          onClick={signInWithPi}
+          disabled={busy}
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gold-grad px-4 py-3 text-sm font-semibold text-primary-foreground shadow-gold transition hover:brightness-105 disabled:opacity-60"
         >
-          Continue with Google
+          <span className="font-display text-base leading-none">π</span>
+          {busy ? "Signing in…" : "Continue with Pi Network"}
         </button>
 
-        <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or email <span className="h-px flex-1 bg-border" />
-        </div>
+        {piReady === false && (
+          <p className="mt-4 rounded-xl border border-gold/40 bg-surface px-4 py-3 text-xs text-muted-foreground">
+            The Pi SDK is only available inside the official{" "}
+            <span className="text-gold">Pi Browser</span>. Open{" "}
+            <span className="font-mono">ie-global-trade.lovable.app</span> there to sign in and
+            settle in π.
+          </p>
+        )}
 
-        <form onSubmit={submit} className="space-y-3">
-          {mode === "signup" && (
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
-              autoComplete="name"
-              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-gold"
-            />
-          )}
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            autoComplete="email"
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-gold"
-          />
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-gold"
-          />
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-xl bg-gold-grad px-4 py-3 text-sm font-semibold text-primary-foreground shadow-gold disabled:opacity-60"
-          >
-            {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-        </form>
+        {existing && !existing.accessToken.startsWith("mock") && (
+          <p className="mt-4 text-xs text-muted-foreground">
+            Signed in as <span className="text-foreground">@{existing.username}</span>
+          </p>
+        )}
 
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-4 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          {mode === "signin" ? "No desk yet? Create an account" : "Already have a desk? Sign in"}
-        </button>
+        <ul className="mt-8 space-y-2 text-xs text-muted-foreground">
+          <li>• Your Pi access token is verified server-side against the Pi Platform API.</li>
+          <li>• The <span className="font-mono">payments</span> scope lets you fund escrow from your Pi Wallet.</li>
+          <li>• Contract value, escrow and milestone releases are denominated in π.</li>
+        </ul>
 
         <Link to="/" className="mt-8 text-xs text-muted-foreground hover:text-foreground">
           ← Back to PiTrade

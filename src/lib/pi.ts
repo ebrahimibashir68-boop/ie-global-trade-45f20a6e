@@ -96,16 +96,29 @@ export async function authenticate(
       console.warn("Incomplete payment found:", payment);
     });
     // Send the access token to the backend for verification against
-    // GET https://api.minepi.com/v2/me before establishing a session.
-    const res = await fetch("/api/pi/verify", {
+    // GET https://api.minepi.com/v2/me, then exchange the returned one-time
+    // token for an app session. Pi is the only identity provider.
+    const res = await fetch("/api/pi/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accessToken: auth.accessToken }),
     });
     if (!res.ok) {
-      throw new Error(`Pi token verification failed (${res.status})`);
+      throw new Error(`Pi sign-in failed (${res.status})`);
     }
-    const verified = (await res.json()) as { uid: string; username: string };
+    const verified = (await res.json()) as {
+      uid: string;
+      username: string;
+      tokenHash: string;
+    };
+
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: verified.tokenHash,
+      type: "email",
+    });
+    if (error) throw new Error(`Pi session could not be established: ${error.message}`);
+
     return {
       uid: verified.uid,
       username: verified.username,
@@ -115,6 +128,7 @@ export async function authenticate(
       verified: true,
     };
   }
+
   // Mock fallback when not in Pi Browser
   await new Promise((r) => setTimeout(r, 400));
   return {

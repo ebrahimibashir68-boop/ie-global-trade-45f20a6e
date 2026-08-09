@@ -49,11 +49,16 @@ export function PiConnectButton({ compact = false }: { compact?: boolean }) {
           <span className="font-medium text-foreground">@{user.username}</span>
         </div>
         <button
-          onClick={() => clearSession()}
+          onClick={async () => {
+            const { supabase } = await import("@/integrations/supabase/client");
+            await supabase.auth.signOut();
+            clearSession();
+          }}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
           Disconnect
         </button>
+
       </div>
     );
   }
