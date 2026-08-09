@@ -156,9 +156,10 @@ function contractTools(sb: Client, userId: string): ToolSet {
         named_place: z.string().nullable(),
         port_of_loading: z.string().nullable(),
         port_of_discharge: z.string().nullable(),
-        currency: z.string().describe("ISO-3 currency, e.g. USD"),
-        contract_value: z.number(),
-        amount_pi: z.number().describe("Settlement amount in π"),
+        currency: z.string().describe("ISO-3 customs reference currency only, e.g. USD. Never a settlement currency."),
+        contract_value: z.number().describe("Indicative customs value in the reference currency, used for duty/VAT only"),
+        amount_pi: z.number().describe("The binding contract value, settled in π. Required."),
+
         transport_mode: z.enum(["sea", "air", "road", "rail", "multimodal", "post"]),
         buyer_legal_name: z.string().nullable(),
         seller_legal_name: z.string().nullable(),
