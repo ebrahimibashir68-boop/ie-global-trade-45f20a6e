@@ -22,6 +22,7 @@ import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as ApiPiSessionRouteImport } from './routes/api/pi.session'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
 import { Route as ApiPiPaymentsApproveRouteImport } from './routes/api/pi.payments.approve'
 import { Route as ApiPiPaymentsCompleteRouteImport } from './routes/api/pi.payments.complete'
@@ -94,6 +95,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPiSessionRoute = ApiPiSessionRouteImport.update({
+  id: '/api/pi/session',
+  path: '/api/pi/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPiVerifyRoute = ApiPiVerifyRouteImport.update({
   id: '/api/pi/verify',
   path: '/api/pi/verify',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts': typeof ContractsIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts/'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
     | '/api/pi/payments/complete'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
     | '/api/pi/payments/complete'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/contracts/new'
     | '/contracts/'
     | '/.mcp/invoke-tool/$tool'
+    | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
     | '/api/pi/payments/complete'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   ContractsNewRoute: typeof ContractsNewRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPiSessionRoute: typeof ApiPiSessionRoute
   ApiPiVerifyRoute: typeof ApiPiVerifyRoute
   ApiPiPaymentsApproveRoute: typeof ApiPiPaymentsApproveRoute
   ApiPiPaymentsCompleteRoute: typeof ApiPiPaymentsCompleteRoute
@@ -334,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pi/session': {
+      id: '/api/pi/session'
+      path: '/api/pi/session'
+      fullPath: '/api/pi/session'
+      preLoaderRoute: typeof ApiPiSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pi/verify': {
       id: '/api/pi/verify'
       path: '/api/pi/verify'
@@ -373,6 +393,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContractsNewRoute: ContractsNewRoute,
   ContractsIndexRoute: ContractsIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPiSessionRoute: ApiPiSessionRoute,
   ApiPiVerifyRoute: ApiPiVerifyRoute,
   ApiPiPaymentsApproveRoute: ApiPiPaymentsApproveRoute,
   ApiPiPaymentsCompleteRoute: ApiPiPaymentsCompleteRoute,
