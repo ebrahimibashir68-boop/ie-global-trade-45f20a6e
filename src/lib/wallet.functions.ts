@@ -246,7 +246,7 @@ export const payBill = createServerFn({ method: "POST" })
       await setBalance(admin, context.userId, after);
     }
 
-    const { error: upErr } = await context.supabase
+    const { error: upErr } = await (admin as unknown as typeof context.supabase)
       .from("pi_bills")
       .update({
         status: "paid",
@@ -254,7 +254,8 @@ export const payBill = createServerFn({ method: "POST" })
         pi_payment_id: data.paymentId ?? null,
         pi_txid: data.txid ?? null,
       })
-      .eq("id", data.id);
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (upErr) throw new Error(upErr.message);
 
     await writeLedger(admin, {
