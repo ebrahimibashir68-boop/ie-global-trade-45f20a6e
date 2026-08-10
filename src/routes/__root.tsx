@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
+  useRouterState,
   Link,
   createRootRouteWithContext,
   useRouter,
@@ -12,6 +13,9 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AiCopilot } from "../components/AiCopilot";
+import { PiComplianceFooter } from "../components/PiComplianceFooter";
+import { PiAuthGate } from "../components/PiAuthGate";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -123,12 +127,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Pi-first: every service sits behind a Pi Network sign-in, except the
+  // sign-in screen itself.
+  const isAuthRoute = pathname.startsWith("/auth");
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <div className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          {isAuthRoute ? <Outlet /> : <PiAuthGate><Outlet /></PiAuthGate>}
+        </div>
+        <PiComplianceFooter />
+      </div>
       <AiCopilot />
+      <Toaster />
     </QueryClientProvider>
   );
 }
