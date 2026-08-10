@@ -29,6 +29,7 @@ export function SiteHeader() {
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {link("/", "Home")}
+          {link("/wallet", "π Wallet")}
           {link("/contracts", "Contracts")}
           {link("/contracts/new", "New")}
           {link("/how-it-works", "How it works")}
