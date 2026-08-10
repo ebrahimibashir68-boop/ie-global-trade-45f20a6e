@@ -369,6 +369,123 @@ export type Database = {
         }
         Relationships: []
       }
+      pi_bills: {
+        Row: {
+          amount_pi: number
+          biller: string
+          category: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          paid_at: string | null
+          pi_payment_id: string | null
+          pi_txid: string | null
+          reference: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_pi: number
+          biller: string
+          category?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          pi_payment_id?: string | null
+          pi_txid?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_pi?: number
+          biller?: string
+          category?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          pi_payment_id?: string | null
+          pi_txid?: string | null
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pi_transactions: {
+        Row: {
+          amount_pi: number
+          balance_after: number | null
+          counterparty: string | null
+          created_at: string
+          direction: string
+          id: string
+          kind: string
+          memo: string | null
+          pi_payment_id: string | null
+          pi_txid: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_pi: number
+          balance_after?: number | null
+          counterparty?: string | null
+          created_at?: string
+          direction: string
+          id?: string
+          kind: string
+          memo?: string | null
+          pi_payment_id?: string | null
+          pi_txid?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_pi?: number
+          balance_after?: number | null
+          counterparty?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          kind?: string
+          memo?: string | null
+          pi_payment_id?: string | null
+          pi_txid?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pi_wallets: {
+        Row: {
+          balance_pi: number
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_pi?: number
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_pi?: number
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           country_code: string | null
