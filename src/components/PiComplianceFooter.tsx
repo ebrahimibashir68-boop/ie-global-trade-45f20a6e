@@ -43,7 +43,8 @@ export function PiComplianceFooter() {
           <div className="text-[10px] uppercase tracking-[0.18em] text-foreground">Desk</div>
           <ul className="mt-3 space-y-1.5">
             <li><Link to="/wallet" className="hover:text-foreground">π Wallet</Link></li>
-            <li><Link to="/contracts" className="hover:text-foreground">Contracts</Link></li>
+            <li><Link to="/contracts" search={{ category: undefined }} className="hover:text-foreground">Contracts</Link></li>
+
             <li><Link to="/how-it-works" className="hover:text-foreground">How it works</Link></li>
             <li><Link to="/trust" className="hover:text-foreground">Trust &amp; security</Link></li>
           </ul>
