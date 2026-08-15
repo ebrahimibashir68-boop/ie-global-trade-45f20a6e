@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { ArrowDownLeft, ArrowUpRight, Plus, Receipt, Trash2, Wallet } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiAuthGate } from "@/components/PiAuthGate";
-import { createPayment, hasPaymentsScope } from "@/lib/pi";
-import { loadSession } from "@/lib/pi-session";
+import { payWithPiWallet } from "@/lib/pi-pay";
+import { PiWalletButton } from "@/components/PiWalletButton";
 import {
   addBill,
   getWalletOverview,
@@ -15,6 +15,7 @@ import {
   recordTopUp,
   removeBill,
   sendTransfer,
+  withdrawToPiWallet,
 } from "@/lib/wallet.functions";
 
 export const Route = createFileRoute("/wallet")({
@@ -54,17 +55,10 @@ function pi(n: number | string) {
   return `π ${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 7 })}`;
 }
 
-/** Run the official Pi U2A flow and return the verified payment proof. */
+/** Run the official Pi U2A flow through the connected Pi Wallet. */
 async function payWithPi(amount: number, memo: string, metadata: Record<string, unknown>) {
-  const session = loadSession();
-  if (!session) throw new Error("Sign in with Pi first.");
-  if (!hasPaymentsScope(session))
-    throw new Error("Re-sign in with Pi and grant the payments scope.");
-  const res = await createPayment({ amount, memo, metadata }, session.accessToken);
-  if (res.status === "cancelled") throw new Error("Pi payment cancelled.");
-  if (res.status !== "completed" || !res.txid)
-    throw new Error(res.message ?? "Pi payment could not be completed.");
-  return { paymentId: res.paymentId, txid: res.txid };
+  const proof = await payWithPiWallet(amount, memo, metadata);
+  return { paymentId: proof.paymentId, txid: proof.txid };
 }
 
 function WalletPage() {
@@ -75,6 +69,7 @@ function WalletPage() {
   const addBillFn = useServerFn(addBill);
   const payBillFn = useServerFn(payBill);
   const removeBillFn = useServerFn(removeBill);
+  const withdrawFn = useServerFn(withdrawToPiWallet);
 
   const { data, isLoading } = useQuery({
     queryKey: ["pi-wallet"],
@@ -85,6 +80,7 @@ function WalletPage() {
 
   const [topUpAmount, setTopUpAmount] = useState(10);
   const [transfer, setTransfer] = useState({ to: "", amount: 1, memo: "" });
+  const [withdrawAmount, setWithdrawAmount] = useState(1);
   const [bill, setBill] = useState({ biller: "", reference: "", category: "", amountPi: 1, dueDate: "" });
 
   const balance = Number(data?.balancePi ?? 0);
@@ -174,7 +170,17 @@ function WalletPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const busy = topUp.isPending || send.isPending || settleBill.isPending;
+  const withdraw = useMutation({
+    mutationFn: async () => withdrawFn({ data: { amountPi: withdrawAmount } }),
+    onSuccess: (r) => {
+      toast.success(`Sent to your Pi Wallet · tx ${String(r.txid).slice(0, 10)}…`);
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const busy =
+    topUp.isPending || send.isPending || settleBill.isPending || withdraw.isPending;
 
   return (
     <main className="mx-auto max-w-5xl px-5 py-8">
@@ -218,6 +224,41 @@ function WalletPage() {
             >
               <span className="font-display leading-none">π</span>
               {topUp.isPending ? "Settling…" : "Top up from Pi Wallet"}
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-3 border-t border-border/70 pt-5">
+          <div>
+            <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              Withdraw to Pi Wallet
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              App-to-user payout sent from the PiTrade app wallet to your connected Pi Wallet.
+            </div>
+            <div className="mt-2">
+              <PiWalletButton compact />
+            </div>
+          </div>
+          <div className="flex items-end gap-2">
+            <label className="text-xs text-muted-foreground">
+              Amount
+              <input
+                type="number"
+                min={0.01}
+                step="0.01"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                className={`${input} mt-1 w-32`}
+              />
+            </label>
+            <button
+              onClick={() => withdraw.mutate()}
+              disabled={busy || withdrawAmount <= 0 || balance < withdrawAmount}
+              className="inline-flex items-center gap-2 rounded-xl border border-gold/50 px-4 py-2.5 text-sm font-semibold text-gold transition hover:bg-gold/10 disabled:opacity-50"
+            >
+              <ArrowUpRight className="size-4" />
+              {withdraw.isPending ? "Sending…" : "Withdraw π"}
             </button>
           </div>
         </div>
