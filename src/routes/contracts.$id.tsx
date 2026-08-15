@@ -13,7 +13,7 @@ import {
   type Milestone,
   type Party,
 } from "@/lib/contracts-store";
-import { createPayment } from "@/lib/pi";
+import { payWithPiWallet } from "@/lib/pi-pay";
 import { loadSession } from "@/lib/pi-session";
 import { openTradeDoc, type TradeDocKind } from "@/lib/trade-docs";
 
@@ -75,19 +75,21 @@ function ContractDetail() {
   if (!contract) throw notFound();
 
   const pay = async () => {
-    const s = loadSession();
-    if (!s) { alert("Connect your Pi Wallet first."); return; }
     setPaying(true);
-    const res = await createPayment({
-      amount: contract.amountPi, memo: contract.memo,
-      metadata: { contractId: contract.id, title: contract.title },
-    });
-    setPaying(false);
-    if (res.status === "completed") {
-      updateContract(contract.id, { status: "funded", paymentTxid: res.txid, paymentId: res.paymentId });
-      setTx({ paymentId: res.paymentId, txid: res.txid });
-    } else if (res.status === "cancelled") alert("Payment cancelled.");
-    else alert("Payment error: " + (res.message ?? "unknown"));
+    try {
+      // Connects the Pi Wallet (payments + wallet_address) if needed, then
+      // runs the U2A flow with server-side approve/complete.
+      const proof = await payWithPiWallet(contract.amountPi, contract.memo, {
+        contractId: contract.id,
+        title: contract.title,
+      });
+      updateContract(contract.id, { status: "funded", paymentTxid: proof.txid, paymentId: proof.paymentId });
+      setTx({ paymentId: proof.paymentId, txid: proof.txid });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Pi payment failed.");
+    } finally {
+      setPaying(false);
+    }
   };
 
   return (

@@ -17,7 +17,7 @@ import {
 
 export type PiTransaction = {
   id: string;
-  kind: "topup" | "transfer_in" | "transfer_out" | "bill_payment";
+  kind: "topup" | "transfer_in" | "transfer_out" | "bill_payment" | "withdrawal";
   amount_pi: number;
   direction: "credit" | "debit";
   counterparty: string | null;
@@ -270,4 +270,51 @@ export const payBill = createServerFn({ method: "POST" })
       balance_after: after,
     });
     return { balancePi: after };
+  });
+
+/**
+ * App-to-User payout: move π from the desk balance back to the pioneer's
+ * Pi Wallet using the Pi Platform A2U flow. The ledger is only debited once
+ * the blockchain transaction has been submitted and completed.
+ */
+export const withdrawToPiWallet = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ amountPi: amount, memo: z.string().max(120).optional() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const meta = (context.claims as { user_metadata?: { pi_uid?: string; pi_username?: string } })
+      ?.user_metadata;
+    const uid = meta?.pi_uid;
+    if (!uid)
+      throw new Error("Connect your Pi Wallet by signing in through Pi Browser first.");
+
+    const admin = await getAdmin();
+    const balance = await ensureWallet(admin, context.userId);
+    if (balance + 1e-7 < data.amountPi)
+      throw new Error("Insufficient π balance for this withdrawal.");
+
+    const { sendA2UPayment } = await import("./pi-a2u.server");
+    const payout = await sendA2UPayment({
+      uid,
+      amount: data.amountPi,
+      memo: (data.memo ?? "PiTrade withdrawal").slice(0, 28),
+      metadata: { type: "wallet_withdrawal", userId: context.userId },
+    });
+    if (!payout.ok) throw new Error(payout.reason);
+
+    const after = round7(balance - data.amountPi);
+    await setBalance(admin, context.userId, after);
+    await writeLedger(admin, {
+      user_id: context.userId,
+      kind: "withdrawal",
+      amount_pi: data.amountPi,
+      direction: "debit",
+      counterparty: meta?.pi_username ? `@${meta.pi_username} (Pi Wallet)` : "Pi Network wallet",
+      memo: data.memo ?? "Withdrawal to Pi Wallet",
+      pi_payment_id: payout.paymentId,
+      pi_txid: payout.txid,
+      balance_after: after,
+    });
+    return { balancePi: after, txid: payout.txid };
   });
