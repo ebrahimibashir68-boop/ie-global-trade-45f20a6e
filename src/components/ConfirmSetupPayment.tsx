@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { authenticate, createPayment, hasPaymentsScope } from "@/lib/pi";
+import { authenticate, hasPaymentsScope, hasWalletScope, WALLET_SCOPES } from "@/lib/pi";
+import { payWithPiWallet } from "@/lib/pi-pay";
 import { clearSession, loadSession, saveSession } from "@/lib/pi-session";
 import type { PiUser } from "@/lib/pi";
 
@@ -16,7 +17,7 @@ export function ConfirmSetupPayment() {
     return () => window.removeEventListener("pi:session", onChange);
   }, []);
 
-  const missingPayments = !!session && !hasPaymentsScope(session);
+  const missingPayments = !!session && (!hasPaymentsScope(session) || !hasWalletScope(session));
 
   const reSign = async () => {
     setResigning(true);
@@ -24,7 +25,7 @@ export function ConfirmSetupPayment() {
     setDetail("");
     try {
       clearSession();
-      const fresh = await authenticate(["username", "payments"]);
+      const fresh = await authenticate(WALLET_SCOPES);
       saveSession(fresh);
       setSession(fresh);
     } catch (e) {
@@ -36,37 +37,18 @@ export function ConfirmSetupPayment() {
   };
 
   const pay = async () => {
-    const s = loadSession();
-    if (!s) {
-      setStatus("error");
-      setDetail("Sign in with Pi first.");
-      return;
-    }
-    if (!hasPaymentsScope(s)) {
-      setStatus("error");
-      setDetail('Missing "payments" scope. Re-sign to grant it.');
-      return;
-    }
     setStatus("running");
     setDetail("");
     try {
-      const result = await createPayment({
-        amount: 1,
-        memo: "PiTrade — ecosystem setup confirmation",
-        metadata: { kind: "setup_confirmation", username: s.username },
-      }, s.accessToken);
-      if (result.status === "completed") {
-        setStatus("done");
-        setDetail(`txid ${result.txid.slice(0, 12)}…`);
-      } else if (result.status === "cancelled") {
-        setStatus("cancelled");
-      } else {
-        setStatus("error");
-        setDetail(result.message ?? "Payment failed");
-      }
+      const proof = await payWithPiWallet(1, "PiTrade — ecosystem setup confirmation", {
+        kind: "setup_confirmation",
+      });
+      setStatus("done");
+      setDetail(`txid ${proof.txid.slice(0, 12)}…`);
     } catch (e) {
-      setStatus("error");
-      setDetail(String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setStatus(/cancel/i.test(msg) ? "cancelled" : "error");
+      setDetail(msg);
     }
   };
 
