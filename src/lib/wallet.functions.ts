@@ -17,7 +17,7 @@ import {
 
 export type PiTransaction = {
   id: string;
-  kind: "topup" | "transfer_in" | "transfer_out" | "bill_payment";
+  kind: "topup" | "transfer_in" | "transfer_out" | "bill_payment" | "withdrawal";
   amount_pi: number;
   direction: "credit" | "debit";
   counterparty: string | null;
