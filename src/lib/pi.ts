@@ -1,7 +1,15 @@
-// Pi Network SDK wrapper.
-// Loads the official Pi SDK from the Pi Browser context.
-// Outside the Pi Browser (e.g. desktop preview) it falls back to a mock
-// so the UI remains testable. Swap PI_SANDBOX to false for production.
+// Pi Network SDK wrapper — current Pi Platform behaviour (SDK 2.0).
+//
+// * Pi.init() is awaited as a Promise before any authenticate/createPayment.
+// * Network (Mainnet/Testnet) and the sandbox flag come from pi-config.ts,
+//   driven by a single env var, so nothing is hardcoded per environment.
+// * onIncompletePaymentFound is handled everywhere the Pi docs require it:
+//   an unfinished payment is settled server-side (complete with its txid, or
+//   cancelled when it never reached the blockchain) before a new one opens.
+// * Outside the Pi Browser the wrapper falls back to a clearly-marked mock so
+//   desktop preview stays usable without ever touching real Pi.
+
+import { PI_SDK_VERSION, piSandbox } from "./pi-config";
 
 export type PiUser = {
   uid: string;
@@ -28,11 +36,17 @@ export type PaymentData = {
   metadata: Record<string, unknown>;
 };
 
+/** Shape of the payment object the SDK hands to onIncompletePaymentFound. */
+export type PiIncompletePayment = {
+  identifier: string;
+  transaction?: { txid?: string; _link?: string } | null;
+};
+
 type PiSDK = {
   init: (opts: { version: string; sandbox?: boolean }) => Promise<void> | void;
   authenticate: (
     scopes: string[],
-    onIncompletePaymentFound: (payment: unknown) => void,
+    onIncompletePaymentFound: (payment: PiIncompletePayment) => void,
   ) => Promise<{
     user: { uid: string; username: string; wallet_address?: string };
     accessToken: string;
@@ -46,6 +60,7 @@ type PiSDK = {
       onError: (error: Error, payment?: unknown) => void;
     },
   ) => void;
+  openShareDialog?: (title: string, message: string) => void;
 };
 
 declare global {
@@ -54,34 +69,69 @@ declare global {
   }
 }
 
-export const PI_SANDBOX = true;
-
 let initPromise: Promise<boolean> | null = null;
 
 export function isPiAvailable(): boolean {
   return typeof window !== "undefined" && !!window.Pi;
 }
 
+/** Best-effort Pi Browser detection (for guidance copy only). */
+export function isPiBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /PiBrowser/i.test(navigator.userAgent) || isPiAvailable();
+}
+
 /**
- * Wait for the Pi SDK script to load, then call Pi.init() and await its Promise.
- * Resolves true when the real SDK is initialized, false if it never appears
- * (e.g. running outside the Pi Browser).
+ * Wait for the Pi SDK script, then call Pi.init() and await its Promise.
+ * Resolves true when the real SDK is initialised, false outside Pi Browser.
  */
 export function initPi(): Promise<boolean> {
   if (initPromise) return initPromise;
   initPromise = (async () => {
     if (typeof window === "undefined") return false;
-    // Wait up to ~5s for the deferred Pi SDK script to attach window.Pi
     const start = Date.now();
     while (!window.Pi && Date.now() - start < 5000) {
       await new Promise((r) => setTimeout(r, 100));
     }
     if (!window.Pi) return false;
-    // Pi.init returns a Promise — await it fully before authenticate()
-    await Promise.resolve(window.Pi.init({ version: "2.0", sandbox: PI_SANDBOX }));
+    await Promise.resolve(
+      window.Pi.init({ version: PI_SDK_VERSION, sandbox: piSandbox() }),
+    );
     return true;
   })();
   return initPromise;
+}
+
+function authHeaders(accessToken?: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  };
+}
+
+/**
+ * Settle a payment the Pi SDK reports as incomplete. Per the Pi Platform
+ * docs a pioneer cannot open a new payment while one is unfinished, so this
+ * completes it when a blockchain txid exists and cancels it otherwise.
+ */
+export async function resolveIncompletePayment(
+  payment: PiIncompletePayment,
+  accessToken?: string,
+): Promise<void> {
+  const paymentId = payment?.identifier;
+  if (!paymentId) return;
+  const txid = payment.transaction?.txid;
+  try {
+    const endpoint = txid ? "/api/pi/payments/complete" : "/api/pi/payments/cancel";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: authHeaders(accessToken),
+      body: JSON.stringify(txid ? { paymentId, txid } : { paymentId }),
+    });
+    if (!res.ok) console.error("[Pi] incomplete payment cleanup failed", res.status);
+  } catch (e) {
+    console.error("[Pi] incomplete payment cleanup error", e);
+  }
 }
 
 export type PiVerifiedSession = PiUser & { verified: boolean };
@@ -93,11 +143,10 @@ export async function authenticate(
   if (ready && window.Pi) {
     const requested = [...scopes];
     const auth = await window.Pi.authenticate(requested, (payment) => {
-      console.warn("Incomplete payment found:", payment);
+      void resolveIncompletePayment(payment);
     });
-    // Send the access token to the backend for verification against
-    // GET https://api.minepi.com/v2/me, then exchange the returned one-time
-    // token for an app session. Pi is the only identity provider.
+    // Verify the access token server-side against GET /v2/me, then exchange
+    // the returned one-time token for an app session. Pi is the only identity.
     const res = await fetch("/api/pi/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -159,12 +208,12 @@ export type PaymentResult = {
   message?: string;
 };
 
-export async function createPayment(data: PaymentData, accessToken?: string): Promise<PaymentResult> {
+export async function createPayment(
+  data: PaymentData,
+  accessToken?: string,
+): Promise<PaymentResult> {
   const ready = await initPi();
-  const authHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-  };
+  const headers = authHeaders(accessToken);
   return new Promise((resolve) => {
     if (ready && window.Pi) {
       window.Pi.createPayment(data, {
@@ -172,10 +221,10 @@ export async function createPayment(data: PaymentData, accessToken?: string): Pr
           try {
             const res = await fetch("/api/pi/payments/approve", {
               method: "POST",
-              headers: authHeaders,
+              headers,
               body: JSON.stringify({ paymentId }),
             });
-            if (!res.ok) console.error("[Pi] approve failed", await res.text());
+            if (!res.ok) console.error("[Pi] approve failed", res.status);
           } catch (e) {
             console.error("[Pi] approve error", e);
           }
@@ -184,11 +233,11 @@ export async function createPayment(data: PaymentData, accessToken?: string): Pr
           try {
             const res = await fetch("/api/pi/payments/complete", {
               method: "POST",
-              headers: authHeaders,
+              headers,
               body: JSON.stringify({ paymentId, txid }),
             });
             if (!res.ok) {
-              console.error("[Pi] complete failed", await res.text());
+              console.error("[Pi] complete failed", res.status);
               resolve({ paymentId, txid, status: "error", message: "Server completion failed" });
               return;
             }
@@ -199,8 +248,7 @@ export async function createPayment(data: PaymentData, accessToken?: string): Pr
           }
           resolve({ paymentId, txid, status: "completed" });
         },
-        onCancel: (paymentId) =>
-          resolve({ paymentId, txid: "", status: "cancelled" }),
+        onCancel: (paymentId) => resolve({ paymentId, txid: "", status: "cancelled" }),
         onError: (error, payment) =>
           resolve({
             paymentId: (payment as { identifier?: string })?.identifier ?? "",
