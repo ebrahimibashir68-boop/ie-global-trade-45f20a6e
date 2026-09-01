@@ -26,6 +26,7 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as ApiPiSessionRouteImport } from './routes/api/pi.session'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
 import { Route as ApiPiPaymentsApproveRouteImport } from './routes/api/pi.payments.approve'
+import { Route as ApiPiPaymentsCancelRouteImport } from './routes/api/pi.payments.cancel'
 import { Route as ApiPiPaymentsCompleteRouteImport } from './routes/api/pi.payments.complete'
 
 const IndexRoute = IndexRouteImport.update({
@@ -116,6 +117,11 @@ const ApiPiPaymentsApproveRoute = ApiPiPaymentsApproveRouteImport.update({
   path: '/api/pi/payments/approve',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPiPaymentsCancelRoute = ApiPiPaymentsCancelRouteImport.update({
+  id: '/api/pi/payments/cancel',
+  path: '/api/pi/payments/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPiPaymentsCompleteRoute = ApiPiPaymentsCompleteRouteImport.update({
   id: '/api/pi/payments/complete',
   path: '/api/pi/payments/complete',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/cancel': typeof ApiPiPaymentsCancelRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRoutesByTo {
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/cancel': typeof ApiPiPaymentsCancelRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRoutesById {
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
   '/api/pi/payments/approve': typeof ApiPiPaymentsApproveRoute
+  '/api/pi/payments/cancel': typeof ApiPiPaymentsCancelRoute
   '/api/pi/payments/complete': typeof ApiPiPaymentsCompleteRoute
 }
 export interface FileRouteTypes {
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
+    | '/api/pi/payments/cancel'
     | '/api/pi/payments/complete'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
+    | '/api/pi/payments/cancel'
     | '/api/pi/payments/complete'
   id:
     | '__root__'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/api/pi/session'
     | '/api/pi/verify'
     | '/api/pi/payments/approve'
+    | '/api/pi/payments/cancel'
     | '/api/pi/payments/complete'
   fileRoutesById: FileRoutesById
 }
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   ApiPiSessionRoute: typeof ApiPiSessionRoute
   ApiPiVerifyRoute: typeof ApiPiVerifyRoute
   ApiPiPaymentsApproveRoute: typeof ApiPiPaymentsApproveRoute
+  ApiPiPaymentsCancelRoute: typeof ApiPiPaymentsCancelRoute
   ApiPiPaymentsCompleteRoute: typeof ApiPiPaymentsCompleteRoute
 }
 
@@ -388,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPiPaymentsApproveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pi/payments/cancel': {
+      id: '/api/pi/payments/cancel'
+      path: '/api/pi/payments/cancel'
+      fullPath: '/api/pi/payments/cancel'
+      preLoaderRoute: typeof ApiPiPaymentsCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pi/payments/complete': {
       id: '/api/pi/payments/complete'
       path: '/api/pi/payments/complete'
@@ -417,6 +437,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPiSessionRoute: ApiPiSessionRoute,
   ApiPiVerifyRoute: ApiPiVerifyRoute,
   ApiPiPaymentsApproveRoute: ApiPiPaymentsApproveRoute,
+  ApiPiPaymentsCancelRoute: ApiPiPaymentsCancelRoute,
   ApiPiPaymentsCompleteRoute: ApiPiPaymentsCompleteRoute,
 }
 export const routeTree = rootRouteImport
