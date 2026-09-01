@@ -1,4 +1,6 @@
 import { Link } from "@tanstack/react-router";
+import { PI_SDK_VERSION, piNetworkLabel } from "@/lib/pi-config";
+
 
 /**
  * App-wide Pi ecosystem compliance footer.
