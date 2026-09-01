@@ -77,6 +77,13 @@ function WalletPage() {
     queryFn: () => overview(),
   });
 
+  const appWalletFn = useServerFn(getAppWalletStatus);
+  const { data: appWallet } = useQuery({
+    queryKey: ["app-wallet-status"],
+    queryFn: () => appWalletFn(),
+    staleTime: 60_000,
+  });
+
   const refresh = useCallback(() => qc.invalidateQueries({ queryKey: ["pi-wallet"] }), [qc]);
 
   const [topUpAmount, setTopUpAmount] = useState(10);
