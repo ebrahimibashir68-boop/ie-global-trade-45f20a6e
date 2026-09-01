@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowDownLeft, ArrowUpRight, Plus, Receipt, Trash2, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Landmark, Plus, Receipt, Trash2, Wallet } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiAuthGate } from "@/components/PiAuthGate";
 import { payWithPiWallet } from "@/lib/pi-pay";
@@ -17,6 +17,7 @@ import {
   sendTransfer,
   withdrawToPiWallet,
 } from "@/lib/wallet.functions";
+import { getAppWalletStatus } from "@/lib/app-wallet.functions";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
@@ -74,6 +75,13 @@ function WalletPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["pi-wallet"],
     queryFn: () => overview(),
+  });
+
+  const appWalletFn = useServerFn(getAppWalletStatus);
+  const { data: appWallet } = useQuery({
+    queryKey: ["app-wallet-status"],
+    queryFn: () => appWalletFn(),
+    staleTime: 60_000,
   });
 
   const refresh = useCallback(() => qc.invalidateQueries({ queryKey: ["pi-wallet"] }), [qc]);
@@ -190,6 +198,50 @@ function WalletPage() {
         Funds move on the Pi Network first — the ledger only updates once the payment is
         approved and completed server-side.
       </p>
+
+      {/* App wallet (Pi ecosystem) connection status */}
+      <section className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-xs">
+        <span className="inline-flex items-center gap-2 font-medium">
+          <Landmark className="size-4 text-gold" /> PiTrade app wallet
+        </span>
+        {appWallet?.configured ? (
+          <>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 ${
+                appWallet.onChain
+                  ? "border-emerald-500/40 text-emerald-400"
+                  : "border-amber-500/40 text-amber-400"
+              }`}
+            >
+              <span
+                className={`size-1.5 rounded-full ${appWallet.onChain ? "bg-emerald-400" : "bg-amber-400"}`}
+              />
+              {appWallet.onChain
+                ? `Connected · ${appWallet.network === "testnet" ? "Pi Testnet" : "Pi Mainnet"}`
+                : "Address not yet funded on-chain"}
+            </span>
+            {appWallet.address && (
+              <code className="rounded bg-background px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                {appWallet.address.slice(0, 8)}…{appWallet.address.slice(-6)}
+              </code>
+            )}
+            {appWallet.balancePi != null && (
+              <span className="text-muted-foreground">
+                Float: <span className="font-display text-gold">{pi(appWallet.balancePi)}</span>
+              </span>
+            )}
+            <span className="text-muted-foreground">
+              {appWallet.payoutsReady
+                ? "User-to-app payments and app-to-user payouts are live."
+                : "Receiving payments live · payouts enable once the wallet is funded."}
+            </span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">
+            App wallet not configured — set the Pi app wallet credentials to enable payouts.
+          </span>
+        )}
+      </section>
 
       {/* Balance */}
       <section className="mt-6 rounded-2xl border border-gold/30 bg-surface p-6">
