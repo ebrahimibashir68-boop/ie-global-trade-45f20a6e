@@ -5,6 +5,7 @@
 // Pi Platform API, or when funds already exist in the user's π balance.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { PI_API_BASE } from "./pi-config";
 
 export type PiPaymentProof = { paymentId: string; txid: string };
 
@@ -25,7 +26,7 @@ export async function verifyPiPayment(
   const apiKey = process.env["PI_API_KEY"];
   if (!apiKey) return { ok: false, reason: "Server misconfigured" };
   try {
-    const res = await fetch(`https://api.minepi.com/v2/payments/${proof.paymentId}`, {
+    const res = await fetch(`${PI_API_BASE}/payments/${proof.paymentId}`, {
       headers: { Authorization: `Key ${apiKey}` },
     });
     if (!res.ok) return { ok: false, reason: "Pi payment could not be verified" };
