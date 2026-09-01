@@ -199,6 +199,50 @@ function WalletPage() {
         approved and completed server-side.
       </p>
 
+      {/* App wallet (Pi ecosystem) connection status */}
+      <section className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-xs">
+        <span className="inline-flex items-center gap-2 font-medium">
+          <Landmark className="size-4 text-gold" /> PiTrade app wallet
+        </span>
+        {appWallet?.configured ? (
+          <>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 ${
+                appWallet.onChain
+                  ? "border-emerald-500/40 text-emerald-400"
+                  : "border-amber-500/40 text-amber-400"
+              }`}
+            >
+              <span
+                className={`size-1.5 rounded-full ${appWallet.onChain ? "bg-emerald-400" : "bg-amber-400"}`}
+              />
+              {appWallet.onChain
+                ? `Connected · ${appWallet.network === "testnet" ? "Pi Testnet" : "Pi Mainnet"}`
+                : "Address not yet funded on-chain"}
+            </span>
+            {appWallet.address && (
+              <code className="rounded bg-background px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                {appWallet.address.slice(0, 8)}…{appWallet.address.slice(-6)}
+              </code>
+            )}
+            {appWallet.balancePi != null && (
+              <span className="text-muted-foreground">
+                Float: <span className="font-display text-gold">{pi(appWallet.balancePi)}</span>
+              </span>
+            )}
+            <span className="text-muted-foreground">
+              {appWallet.payoutsReady
+                ? "User-to-app payments and app-to-user payouts are live."
+                : "Receiving payments live · payouts enable once the wallet is funded."}
+            </span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">
+            App wallet not configured — set the Pi app wallet credentials to enable payouts.
+          </span>
+        )}
+      </section>
+
       {/* Balance */}
       <section className="mt-6 rounded-2xl border border-gold/30 bg-surface p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
