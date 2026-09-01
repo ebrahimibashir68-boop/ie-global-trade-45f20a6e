@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { authenticate, initPi, REQUIRED_PAYMENT_SCOPES } from "@/lib/pi";
 import { loadSession, saveSession } from "@/lib/pi-session";
+import { piNetworkLabel } from "@/lib/pi-config";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
