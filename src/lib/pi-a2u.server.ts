@@ -9,21 +9,23 @@ import {
   Asset,
   Keypair,
   Memo,
-  Networks,
   Operation,
   TransactionBuilder,
 } from "@stellar/stellar-base";
+
+import { PI_API_BASE } from "./pi-config";
+import { piHorizonUrl, piNetworkPassphrase } from "./pi-network.server";
 
 export type A2UResult =
   | { ok: true; paymentId: string; txid: string }
   | { ok: false; reason: string };
 
-const PI_API = "https://api.minepi.com/v2";
+const PI_API = PI_API_BASE;
 
-function horizonUrl() {
-  return process.env["PI_HORIZON_URL"] ?? "https://api.mainnet.minepi.com";
-}
-
+/**
+ * Resolve the network passphrase from the live Horizon root, falling back to
+ * the env-configured network (PI_NETWORK / PI_NETWORK_PASSPHRASE).
+ */
 async function networkPassphrase(horizon: string): Promise<string> {
   try {
     const res = await fetch(horizon);
@@ -34,7 +36,7 @@ async function networkPassphrase(horizon: string): Promise<string> {
   } catch (e) {
     console.error("[Pi] horizon root fetch failed", e);
   }
-  return Networks.PUBLIC;
+  return piNetworkPassphrase();
 }
 
 /**
@@ -82,7 +84,7 @@ export async function sendA2UPayment(params: {
     paymentId = payment.identifier;
 
     // 2. Sign and submit the blockchain transaction from the app wallet.
-    const horizon = horizonUrl();
+    const horizon = piHorizonUrl();
     const keypair = Keypair.fromSecret(seed);
     const [passphrase, accRes] = await Promise.all([
       networkPassphrase(horizon),

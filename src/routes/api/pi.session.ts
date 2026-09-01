@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PI_API_BASE } from "@/lib/pi-config";
 
 // Pi-ecosystem sign-in.
 // Verifies a Pi Network access token against the Pi Platform API and, on
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/api/pi/session")({
           return new Response("Missing accessToken", { status: 400 });
         }
 
-        const piRes = await fetch("https://api.minepi.com/v2/me", {
+        const piRes = await fetch(`${PI_API_BASE}/me`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         if (!piRes.ok) {

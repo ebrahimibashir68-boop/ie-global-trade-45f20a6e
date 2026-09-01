@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { authenticate, initPi, REQUIRED_PAYMENT_SCOPES } from "@/lib/pi";
 import { loadSession, saveSession } from "@/lib/pi-session";
+import { piNetworkLabel } from "@/lib/pi-config";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -104,7 +105,10 @@ function AuthPage() {
           <li>• Your Pi access token is verified server-side against the Pi Platform API.</li>
           <li>• The <span className="font-mono">payments</span> scope lets you fund escrow from your Pi Wallet.</li>
           <li>• Contract value, escrow and milestone releases are denominated in π.</li>
+          <li>• Any unfinished Pi payment is resolved automatically when you sign in.</li>
+          <li>• Connected to <span className="text-gold">{piNetworkLabel()}</span>.</li>
         </ul>
+
 
         <Link to="/" className="mt-8 text-xs text-muted-foreground hover:text-foreground">
           ← Back to PiTrade

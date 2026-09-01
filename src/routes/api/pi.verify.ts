@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PI_API_BASE } from "@/lib/pi-config";
 
 // Server route: verifies a Pi Network access token by calling the Pi
 // Platform API. No Pi API key is required for /v2/me.
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/api/pi/verify")({
           return new Response("Missing accessToken", { status: 400 });
         }
 
-        const piRes = await fetch("https://api.minepi.com/v2/me", {
+        const piRes = await fetch(`${PI_API_BASE}/me`, {
           method: "GET",
           headers: { Authorization: `Bearer ${accessToken}` },
         });
