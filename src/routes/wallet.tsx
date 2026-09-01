@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowDownLeft, ArrowUpRight, Plus, Receipt, Trash2, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Landmark, Plus, Receipt, Trash2, Wallet } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiAuthGate } from "@/components/PiAuthGate";
 import { payWithPiWallet } from "@/lib/pi-pay";
@@ -17,6 +17,7 @@ import {
   sendTransfer,
   withdrawToPiWallet,
 } from "@/lib/wallet.functions";
+import { getAppWalletStatus } from "@/lib/app-wallet.functions";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
