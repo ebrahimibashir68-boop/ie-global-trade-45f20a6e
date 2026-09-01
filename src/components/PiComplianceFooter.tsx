@@ -31,12 +31,18 @@ export function PiComplianceFooter() {
             <li>• Pi Network is the only identity provider — no email or social logins.</li>
             <li>
               • Payments follow the official U2A flow: createPayment → server approve →
-              server complete.
+              server complete, with unfinished payments auto-resolved on sign-in.
             </li>
+            <li>• App-to-user payouts are signed by the app wallet and completed via the Pi API.</li>
             <li>• Ledger balances update only after a Pi payment is verified server-side.</li>
             <li>• Access tokens are validated against the Pi Platform API on every call.</li>
-            <li>• Running in Pi Testnet/sandbox mode until mainnet listing is approved.</li>
+            <li>
+              • Connected network:{" "}
+              <span className="text-gold">{piNetworkLabel()}</span> (Pi SDK v
+              {PI_SDK_VERSION}).
+            </li>
           </ul>
+
         </div>
 
         <div className="text-xs text-muted-foreground">
