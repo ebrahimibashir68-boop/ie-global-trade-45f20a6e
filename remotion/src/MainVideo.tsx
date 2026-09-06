@@ -11,15 +11,18 @@ export const MainVideo: React.FC = () => (
   <AbsoluteFill>
     <Backdrop />
     <TransitionSeries>
-      {SCENES.map((s, i) => (
-        <>
-          {i > 0 ? (
+      {SCENES.flatMap((s, i) => {
+        const nodes = [];
+        if (i > 0) {
+          nodes.push(
             <TransitionSeries.Transition
               key={`t-${s.id}`}
               presentation={wipe({ direction: i % 2 ? "from-right" : "from-bottom" })}
               timing={springTiming({ config: { damping: 200 }, durationInFrames: TRANSITION })}
-            />
-          ) : null}
+            />,
+          );
+        }
+        nodes.push(
           <TransitionSeries.Sequence key={s.id} durationInFrames={sceneFrames(s.seconds)}>
             <Scene
               id={s.id}
@@ -29,9 +32,10 @@ export const MainVideo: React.FC = () => (
               index={i}
               total={SCENES.length}
             />
-          </TransitionSeries.Sequence>
-        </>
-      ))}
+          </TransitionSeries.Sequence>,
+        );
+        return nodes;
+      })}
     </TransitionSeries>
   </AbsoluteFill>
 );
