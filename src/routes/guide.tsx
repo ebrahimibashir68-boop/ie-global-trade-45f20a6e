@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import poster from "@/assets/pitrade-smart-contract.jpg";
+import guideVideo from "@/assets/pitrade-guide.mp4.asset.json";
 
-const VIDEO_SRC = "/guide/pitrade-guide.mp4";
+const VIDEO_SRC = guideVideo.url;
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/guide")({
           description:
             "Narrated walkthrough of the PiTrade platform: Pi sign-in, π wallet, contract creation, signing and funding in π, milestone escrow release and the AI crew.",
           uploadDate: new Date().toISOString().slice(0, 10),
-          contentUrl: "https://ie-global-trade.lovable.app/guide/pitrade-guide.mp4",
+          contentUrl: "https://ie-global-trade.lovable.app" + guideVideo.url,
           embedUrl: "https://ie-global-trade.lovable.app/guide",
         }),
       },
