@@ -23,6 +23,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPiSessionRouteImport } from './routes/api/pi.session'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
@@ -102,6 +103,11 @@ const ContractsNewRoute = ContractsNewRouteImport.update({
   path: '/contracts/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts': typeof ContractsIndexRoute
+  '/services': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
+    | '/services/'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts'
+    | '/services'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/contracts/$id'
     | '/contracts/new'
     | '/contracts/'
+    | '/services/'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -285,6 +297,7 @@ export interface RootRouteChildren {
   ContractsIdRoute: typeof ContractsIdRoute
   ContractsNewRoute: typeof ContractsNewRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPiSessionRoute: typeof ApiPiSessionRoute
   ApiPiVerifyRoute: typeof ApiPiVerifyRoute
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContractsIdRoute: ContractsIdRoute,
   ContractsNewRoute: ContractsNewRoute,
   ContractsIndexRoute: ContractsIndexRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPiSessionRoute: ApiPiSessionRoute,
   ApiPiVerifyRoute: ApiPiVerifyRoute,
