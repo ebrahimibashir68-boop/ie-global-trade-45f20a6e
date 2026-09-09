@@ -1,10 +1,24 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { PiConnectButton } from "./PiConnectButton";
 import { PiWalletButton } from "./PiWalletButton";
 import { SettingsButton } from "./SettingsButton";
 
+const NAV: Array<[string, string]> = [
+  ["/", "Home"],
+  ["/wallet", "π Wallet"],
+  ["/contracts", "Contracts"],
+  ["/contracts/new", "New"],
+  ["/services", "Services"],
+  ["/guide", "Guide"],
+  ["/how-it-works", "How it works"],
+  ["/trust", "Trust"],
+];
+
 export function SiteHeader() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const [open, setOpen] = useState(false);
   const link = (to: string, label: string) => (
     <Link
       to={to}
@@ -17,6 +31,7 @@ export function SiteHeader() {
       {label}
     </Link>
   );
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3">
