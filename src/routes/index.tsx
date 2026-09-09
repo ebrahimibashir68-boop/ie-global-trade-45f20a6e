@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ContractCard } from "@/components/ContractCard";
 import { listContracts, seedIfEmpty, type Contract } from "@/lib/contracts-store";
 import { ConfirmSetupPayment } from "@/components/ConfirmSetupPayment";
+import { SERVICE_GROUPS } from "@/lib/trade/services";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -140,7 +142,38 @@ function Home() {
         </div>
       </section>
 
+      {/* SERVICES */}
+      <section className="mx-auto max-w-7xl px-5 pb-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.22em] text-gold">Services</div>
+            <h2 className="mt-2 font-display text-3xl font-semibold">The full import/export desk.</h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Sea, air, road and rail freight, customs clearance, trade documents, escrow in π,
+              cargo insurance, inspection, warehousing and export licensing.
+            </p>
+          </div>
+          <Link to="/services" className="text-sm text-muted-foreground underline-offset-4 hover:text-gold hover:underline">
+            All services →
+          </Link>
+        </div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {SERVICE_GROUPS.map((g) => (
+            <Link
+              key={g.key}
+              to="/services"
+              hash={g.key}
+              className="group rounded-2xl border border-border/60 bg-surface p-5 transition hover:-translate-y-0.5 hover:border-gold/60"
+            >
+              <div className="font-display text-base font-semibold group-hover:text-gold">{g.label}</div>
+              <p className="mt-1.5 text-sm text-muted-foreground">{g.blurb}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* LIVE CONTRACTS */}
+
       <section className="mx-auto max-w-7xl px-5 pb-20">
         <div className="flex items-end justify-between">
           <div>
