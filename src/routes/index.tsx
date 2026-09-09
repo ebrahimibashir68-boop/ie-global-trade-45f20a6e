@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ContractCard } from "@/components/ContractCard";
 import { listContracts, seedIfEmpty, type Contract } from "@/lib/contracts-store";
 import { ConfirmSetupPayment } from "@/components/ConfirmSetupPayment";
+import { SERVICE_GROUPS } from "@/lib/trade/services";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
