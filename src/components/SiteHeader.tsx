@@ -32,6 +32,7 @@ export function SiteHeader() {
           {link("/wallet", "π Wallet")}
           {link("/contracts", "Contracts")}
           {link("/contracts/new", "New")}
+          {link("/services", "Services")}
           {link("/guide", "Guide")}
           {link("/how-it-works", "How it works")}
           {link("/trust", "Trust")}

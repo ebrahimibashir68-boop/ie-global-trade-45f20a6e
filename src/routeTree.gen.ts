@@ -23,6 +23,8 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ContractsIndexRouteImport } from './routes/contracts.index'
 import { Route as ContractsIdRouteImport } from './routes/contracts.$id'
 import { Route as ContractsNewRouteImport } from './routes/contracts.new'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
+import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPiSessionRouteImport } from './routes/api/pi.session'
 import { Route as ApiPiVerifyRouteImport } from './routes/api/pi.verify'
@@ -102,6 +104,16 @@ const ContractsNewRoute = ContractsNewRouteImport.update({
   path: '/contracts/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesSlugRoute = ServicesSlugRouteImport.update({
+  id: '/services/$slug',
+  path: '/services/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -148,7 +160,9 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -170,7 +184,9 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/contracts': typeof ContractsIndexRoute
+  '/services': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -193,7 +209,9 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/contracts/$id': typeof ContractsIdRoute
   '/contracts/new': typeof ContractsNewRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/contracts/': typeof ContractsIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/pi/session': typeof ApiPiSessionRoute
   '/api/pi/verify': typeof ApiPiVerifyRoute
@@ -217,7 +235,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
+    | '/services/$slug'
     | '/contracts/'
+    | '/services/'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -239,7 +259,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
+    | '/services/$slug'
     | '/contracts'
+    | '/services'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -261,7 +283,9 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/contracts/$id'
     | '/contracts/new'
+    | '/services/$slug'
     | '/contracts/'
+    | '/services/'
     | '/.mcp/invoke-tool/$tool'
     | '/api/pi/session'
     | '/api/pi/verify'
@@ -284,7 +308,9 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ContractsIdRoute: typeof ContractsIdRoute
   ContractsNewRoute: typeof ContractsNewRoute
+  ServicesSlugRoute: typeof ServicesSlugRoute
   ContractsIndexRoute: typeof ContractsIndexRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPiSessionRoute: typeof ApiPiSessionRoute
   ApiPiVerifyRoute: typeof ApiPiVerifyRoute
@@ -393,6 +419,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/$slug': {
+      id: '/services/$slug'
+      path: '/services/$slug'
+      fullPath: '/services/$slug'
+      preLoaderRoute: typeof ServicesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -453,7 +493,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ContractsIdRoute: ContractsIdRoute,
   ContractsNewRoute: ContractsNewRoute,
+  ServicesSlugRoute: ServicesSlugRoute,
   ContractsIndexRoute: ContractsIndexRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPiSessionRoute: ApiPiSessionRoute,
   ApiPiVerifyRoute: ApiPiVerifyRoute,
