@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { SERVICES } from "@/lib/trade/services";
 
 const BASE_URL = "https://ie-global-trade.lovable.app";
 
