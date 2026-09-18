@@ -9,7 +9,12 @@ export type ServiceGroup =
   | "finance"
   | "assurance"
   | "logistics"
-  | "compliance";
+  | "compliance"
+  | "government"
+  | "settlement";
+
+/** Territorial reach of a service: worldwide, country-level, or bloc/corridor. */
+export type ServiceReach = "global" | "national" | "regional";
 
 export interface TradeService {
   slug: string;
@@ -29,6 +34,18 @@ export interface TradeService {
   charging: string;
   /** Governing rules and conventions. */
   standards: string[];
+  /** Territorial reach; defaults to global when unset. */
+  reach?: ServiceReach[];
+}
+
+export const REACH_LABELS: Record<ServiceReach, string> = {
+  global: "Global",
+  national: "National",
+  regional: "Regional",
+};
+
+export function serviceReach(s: TradeService): ServiceReach[] {
+  return s.reach ?? ["global", "national", "regional"];
 }
 
 export const SERVICE_GROUPS: { key: ServiceGroup; label: string; blurb: string }[] = [
@@ -39,6 +56,8 @@ export const SERVICE_GROUPS: { key: ServiceGroup; label: string; blurb: string }
   { key: "assurance", label: "Insurance & inspection", blurb: "Cargo cover, surveys, pre-shipment inspection and quality certification." },
   { key: "logistics", label: "Warehousing & handling", blurb: "Consolidation, packing, labelling, terminal handling, storage and last-mile." },
   { key: "compliance", label: "Compliance & licensing", blurb: "Sanctions screening, dual-use control, permits, origin and product conformity." },
+  { key: "government", label: "Government, national & regional", blurb: "Single windows, preferential trade agreements, public procurement, corridors and aid consignments." },
+  { key: "settlement", label: "Digital settlement & QFS", blurb: "Pi-settled treasury, quantum-financial-system compatible messaging, reconciliation and audit." },
 ];
 
 export const SERVICES: TradeService[] = [
@@ -601,6 +620,176 @@ export const SERVICES: TradeService[] = [
     charging: "Included with organisation setup — no separate π charge.",
     standards: ["WCO SAFE Framework (AEO)", "Revised Kyoto Convention", "FATF KYC guidance"],
   },
+  // ── Government, national & regional ──────────────────────────────────────
+  {
+    slug: "national-single-window",
+    name: "National single window filing",
+    group: "government",
+    tagline: "One national submission to every border agency at once.",
+    traditional:
+      "Traders file separate declarations to customs, health, agriculture, standards and port authorities, each with its own forms, offices and opening hours.",
+    onPiTrade:
+      "Contract data is assembled once and rendered into each national agency's dataset, with every submission hashed to the contract trail so the trader, the broker and the agency read the same record.",
+    covers: [
+      "Single declaration dataset reused by all border agencies",
+      "National customs, health, agriculture and standards filings",
+      "Licence, permit and certificate lodgement",
+      "Agency response, query and release tracking",
+      "Country profile of required filings by commodity",
+    ],
+    documents: ["Single window declaration", "Agency permits", "Release notification", "Filing receipt"],
+    charging: "Per declaration lodged — quoted in π.",
+    standards: ["UN/CEFACT Recommendation 33-37", "WTO Trade Facilitation Agreement", "WCO Data Model"],
+    reach: ["national"],
+  },
+  {
+    slug: "trade-agreements",
+    name: "Regional trade agreements & preference",
+    group: "government",
+    tagline: "Claiming the duty preference a trade bloc entitles you to.",
+    traditional:
+      "Traders check rules of origin under each free-trade agreement, prove sufficient processing and file an origin declaration to obtain reduced or zero duty.",
+    onPiTrade:
+      "The contract records origin inputs and the agreement claimed; the landed-cost engine applies the preferential rate and stores the origin evidence with the declaration.",
+    covers: [
+      "Free-trade, customs-union and preferential scheme eligibility",
+      "Rules of origin and value-added tests",
+      "Approved / registered exporter declarations",
+      "Retrospective preference claims and verification requests",
+      "Duty saving comparison, preferential vs. most-favoured-nation",
+    ],
+    documents: ["Origin declaration", "EUR.1 / Form A style certificate", "Supplier declaration", "Preference calculation sheet"],
+    charging: "Per agreement claim assessed — quoted in π.",
+    standards: ["WTO rules of origin", "Revised Kyoto Convention Annex K", "Individual FTA protocols"],
+    reach: ["regional"],
+  },
+  {
+    slug: "public-procurement",
+    name: "Government & public procurement trade",
+    group: "government",
+    tagline: "State, municipal and agency buying, executed as a signed contract.",
+    traditional:
+      "Public bodies run tenders, award supply contracts, require performance bonds and pay against inspected delivery under public accounting rules.",
+    onPiTrade:
+      "A government or institution entity signs the same contract as any trader, with milestone-gated π release, published document hashes and an immutable award-to-delivery audit trail.",
+    covers: [
+      "Tender award reference and framework agreement linkage",
+      "Institution, ministry and state-owned entity signatories",
+      "Performance and advance-payment guarantee tracking",
+      "Inspection-before-payment milestone gating",
+      "Public audit export of the full contract trail",
+    ],
+    documents: ["Award letter", "Supply contract", "Performance guarantee", "Inspection and acceptance certificate"],
+    charging: "Per contract executed — quoted in π.",
+    standards: ["UNCITRAL Model Law on Public Procurement", "WTO Government Procurement Agreement"],
+    reach: ["national", "global"],
+  },
+  {
+    slug: "transit-corridors",
+    name: "Regional transit & corridor movement",
+    group: "government",
+    tagline: "Moving sealed goods across several countries under one guarantee.",
+    traditional:
+      "Goods cross transit countries under carnet or transit systems with a customs guarantee, sealed loads and office-of-departure to office-of-destination discharge.",
+    onPiTrade:
+      "Each corridor leg is a milestone with its own seal, office and timestamp, so discharge of the transit is visible to every party without chasing paper.",
+    covers: [
+      "Transit declarations and guarantee references",
+      "Seal numbers, corridor legs and border crossing times",
+      "TIR / eTIR and ATA carnet handling",
+      "Landlocked-country corridor and port-of-transit routing",
+      "Discharge confirmation and guarantee release",
+    ],
+    documents: ["Transit declaration", "TIR carnet / eTIR record", "ATA carnet", "Guarantee certificate", "Discharge confirmation"],
+    charging: "Per transit movement — quoted in π.",
+    standards: ["TIR Convention 1975 / eTIR", "Istanbul Convention (ATA)", "Common transit procedures"],
+    reach: ["regional"],
+  },
+  {
+    slug: "national-standards",
+    name: "National standards & conformity assessment",
+    group: "government",
+    tagline: "Meeting the destination country's product rules before the goods sail.",
+    traditional:
+      "Importing countries require product certification, conformity marks, labelling in the local language and pre-export verification of conformity by an appointed body.",
+    onPiTrade:
+      "The destination's conformity requirements are attached to the contract as required documents, so the goods cannot pass the customs milestone without them.",
+    covers: [
+      "Destination product standards and marking rules",
+      "Pre-export verification of conformity programmes",
+      "Local-language labelling and metrology requirements",
+      "Type approval, registration and homologation",
+      "Halal, kosher, organic and other scheme certification",
+    ],
+    documents: ["Certificate of conformity", "Test report", "Type approval", "Label artwork approval"],
+    charging: "Per product family assessed — quoted in π.",
+    standards: ["WTO TBT Agreement", "ISO/IEC 17065 & 17025", "National technical regulations"],
+    reach: ["national"],
+  },
+  {
+    slug: "aid-consignments",
+    name: "Humanitarian, aid & emergency consignments",
+    group: "government",
+    tagline: "Relief and donated goods moved with duty relief and full traceability.",
+    traditional:
+      "Relief cargo needs donation certificates, duty and tax exemption approvals, consignee authorisation and priority clearance during emergencies.",
+    onPiTrade:
+      "Donor, implementing agency and receiving authority all sign the same record; exemption approvals and distribution milestones are hashed for donor reporting.",
+    covers: [
+      "Donation and gift certification",
+      "Duty and tax exemption applications",
+      "Priority and simplified emergency clearance",
+      "Consignee authorisation for agencies and ministries",
+      "Distribution milestones and donor audit export",
+    ],
+    documents: ["Donation certificate", "Exemption approval", "Consignment note", "Distribution report"],
+    charging: "Zero platform fee for verified relief consignments; network fees only.",
+    standards: ["Istanbul Convention Annex B.9", "WCO relief consignment guidelines", "Sphere logistics standards"],
+    reach: ["global", "national"],
+  },
+  // ── Digital settlement & QFS ─────────────────────────────────────────────
+  {
+    slug: "qfs-settlement",
+    name: "QFS-compatible settlement rail",
+    group: "settlement",
+    tagline: "Asset-backed, ledger-native settlement instead of correspondent banking.",
+    traditional:
+      "Cross-border payment hops through correspondent banks over SWIFT messaging, taking days, losing value to spreads and leaving both parties blind to the money in flight.",
+    onPiTrade:
+      "Value moves as π on the Pi blockchain — one hop, final in seconds, with the payment identifier and transaction hash written onto the contract so settlement and trade documents reconcile themselves.",
+    covers: [
+      "Direct wallet-to-wallet settlement with no correspondent chain",
+      "ISO 20022-style structured remittance data carried on each payment",
+      "Payment-versus-document release at every milestone",
+      "Immutable transaction hash bound to invoice and contract reference",
+      "Real-time position and float visibility for both parties",
+    ],
+    documents: ["Payment instruction", "Settlement confirmation", "Transaction hash record", "Reconciliation statement"],
+    charging: "Network fee only; no correspondent or spread charges.",
+    standards: ["ISO 20022 message semantics", "Pi Network consensus & Horizon API", "BIS PvP settlement principles"],
+    reach: ["global"],
+  },
+  {
+    slug: "treasury-reconciliation",
+    name: "Treasury, reconciliation & audit trail",
+    group: "settlement",
+    tagline: "Every π in and out, matched to a contract and provable to an auditor.",
+    traditional:
+      "Finance teams reconcile bank statements to invoices by hand, chase unapplied credits and rebuild an audit trail from archived paper.",
+    onPiTrade:
+      "The ledger records every top-up, escrow funding, milestone release, payout and fee with the contract it belongs to, so the statement is the audit trail.",
+    covers: [
+      "Immutable π ledger per organisation and per contract",
+      "Escrow float, released and pending balances",
+      "Automatic matching of payments to invoices and milestones",
+      "Exportable statements for accounting and tax filing",
+      "Dual-signature control over outbound payouts",
+    ],
+    documents: ["Ledger statement", "Escrow position report", "Remittance advice", "Audit export"],
+    charging: "Included in platform use — no separate π charge.",
+    standards: ["IFRS 15 revenue recognition", "ISAE 3402 control reporting", "ISO 20022 reconciliation data"],
+    reach: ["global"],
+  },
 ];
 
 export function getService(slug: string): TradeService | undefined {
@@ -609,4 +798,8 @@ export function getService(slug: string): TradeService | undefined {
 
 export function servicesByGroup(group: ServiceGroup): TradeService[] {
   return SERVICES.filter((s) => s.group === group);
+}
+
+export function servicesByReach(reach: ServiceReach): TradeService[] {
+  return SERVICES.filter((s) => serviceReach(s).includes(reach));
 }

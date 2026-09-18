@@ -1,20 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiComplianceFooter } from "@/components/PiComplianceFooter";
-import { SERVICE_GROUPS, SERVICES } from "@/lib/trade/services";
+import {
+  REACH_LABELS,
+  SERVICE_GROUPS,
+  SERVICES,
+  serviceReach,
+  type ServiceReach,
+} from "@/lib/trade/services";
 
 export const Route = createFileRoute("/services/")({
   head: () => ({
     meta: [
-      { title: "Trade services · Freight, customs, finance on Pi" },
-      { name: "description", content: "Every traditional import-export service — sea, air, road and rail freight, customs clearance, documents, cargo insurance, inspection, warehousing and licensing — delivered on PiTrade's Pi-settled smart contracts." },
-      { property: "og:title", content: "PiTrade services — the full import/export desk" },
-      { property: "og:description", content: "Sea, air, road and rail freight, customs, trade documents, escrow in π, insurance, inspection, warehousing and export controls." },
+      { title: "Trade services · Global, national & regional on Pi" },
+      { name: "description", content: "Every traditional import-export service — sea, air, road and rail freight, customs, single windows, trade agreements, documents, insurance, warehousing, licensing and QFS-compatible π settlement — on PiTrade smart contracts." },
+      { property: "og:title", content: "PiTrade services — global, national and regional trade" },
+      { property: "og:description", content: "Freight, customs, single windows, preferential origin, public procurement, corridors, documents, insurance and QFS-compatible settlement in π." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://ie-global-trade.lovable.app/services" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "PiTrade services — the full import/export desk" },
-      { name: "twitter:description", content: "Freight, customs, documents, finance, insurance, warehousing and compliance — settled in π." },
+      { name: "twitter:title", content: "PiTrade services — global, national and regional trade" },
+      { name: "twitter:description", content: "The whole import/export desk plus QFS-compatible settlement, all in π." },
     ],
     links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/services" }],
     scripts: [{
@@ -35,7 +42,12 @@ export const Route = createFileRoute("/services/")({
   component: ServicesIndex,
 });
 
+const REACHES: ServiceReach[] = ["global", "national", "regional"];
+
 function ServicesIndex() {
+  const [reach, setReach] = useState<ServiceReach | "all">("all");
+  const visible = SERVICES.filter((s) => reach === "all" || serviceReach(s).includes(reach));
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -46,12 +58,32 @@ function ServicesIndex() {
         </h1>
         <p className="mt-3 max-w-3xl text-muted-foreground">
           Everything a traditional import/export operation relies on — ocean, air, road and
-          rail carriage, export and import clearance, the full document set, documentary
-          credit logic, cargo cover, inspection, warehousing and export controls — expressed
-          as contract data, milestones and π settlement.
+          rail carriage, export and import clearance, national single windows, regional trade
+          agreements and corridors, public procurement, the full document set, cargo cover,
+          inspection, warehousing and export controls — expressed as contract data, milestones
+          and π settlement that is compatible with quantum-financial-system style, asset-backed
+          value transfer.
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">Reach:</span>
+          {(["all", ...REACHES] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setReach(r)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition ${
+                reach === r
+                  ? "border-gold/60 bg-surface-2 text-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {r === "all" ? "All services" : REACH_LABELS[r]}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
           {SERVICE_GROUPS.map((g) => (
             <a
               key={g.key}
@@ -64,7 +96,8 @@ function ServicesIndex() {
         </div>
 
         {SERVICE_GROUPS.map((g) => {
-          const items = SERVICES.filter((s) => s.group === g.key);
+          const items = visible.filter((s) => s.group === g.key);
+          if (items.length === 0) return null;
           return (
             <section key={g.key} id={g.key} className="mt-14 scroll-mt-24">
               <h2 className="font-display text-2xl font-semibold">{g.label}</h2>
@@ -81,6 +114,16 @@ function ServicesIndex() {
                       {s.name}
                     </div>
                     <p className="mt-1.5 text-sm text-muted-foreground">{s.tagline}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {serviceReach(s).map((r) => (
+                        <span
+                          key={r}
+                          className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
+                        >
+                          {REACH_LABELS[r]}
+                        </span>
+                      ))}
+                    </div>
                     <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-gold">
                       View service →
                     </div>
