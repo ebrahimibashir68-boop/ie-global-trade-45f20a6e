@@ -80,6 +80,16 @@ function ServiceDetail() {
         </div>
         <h1 className="mt-1 font-display text-4xl font-semibold md:text-5xl">{s.name}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{s.tagline}</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {serviceReach(s).map((r) => (
+            <span
+              key={r}
+              className="rounded-full border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              {REACH_LABELS[r]} reach
+            </span>
+          ))}
+        </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-surface-2 p-5">
