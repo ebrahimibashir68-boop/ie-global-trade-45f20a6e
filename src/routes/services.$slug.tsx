@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiComplianceFooter } from "@/components/PiComplianceFooter";
-import { getService, SERVICE_GROUPS, SERVICES } from "@/lib/trade/services";
+import { getService, REACH_LABELS, SERVICE_GROUPS, SERVICES, serviceReach } from "@/lib/trade/services";
 
 export const Route = createFileRoute("/services/$slug")({
   loader: ({ params }) => {
