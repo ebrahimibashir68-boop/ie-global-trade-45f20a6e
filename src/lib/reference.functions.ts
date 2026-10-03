@@ -1,7 +1,7 @@
 // Public reference-data lookups (HS classification, duty rates, control lists).
-// These read public tables through the publishable key and are safe to call
 // from public routes and loaders.
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
