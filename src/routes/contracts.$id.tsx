@@ -47,7 +47,7 @@ export const Route = createFileRoute("/contracts/$id")({
         <SiteHeader />
         <div className="mx-auto max-w-2xl px-5 py-20 text-center">
           <h1 className="font-display text-2xl">Something went wrong</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
           <button onClick={() => { router.invalidate(); reset(); }} className="mt-4 rounded-full bg-gold px-5 py-2 text-sm text-primary-foreground">Try again</button>
         </div>
       </div>
