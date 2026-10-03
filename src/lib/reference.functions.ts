@@ -1,7 +1,7 @@
 // Public reference-data lookups (HS classification, duty rates, control lists).
-// These read public tables through the publishable key and are safe to call
 // from public routes and loaders.
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -53,8 +53,10 @@ export const lookupDuty = createServerFn({ method: "GET" })
     return estimateLandedCost(data.value, data.hsCode, data.destination, rates ?? []);
   });
 
-export const listControlLists = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = publicClient();
+export const listControlLists = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+  const sb = context.supabase;
   const [controlled, denied] = await Promise.all([
     sb.from("controlled_goods").select("id, hs_prefix, regime, description, severity").order("hs_prefix"),
     sb.from("denied_parties").select("id, name, country_code, list_source, reason").order("name"),

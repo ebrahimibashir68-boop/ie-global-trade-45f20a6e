@@ -95,8 +95,20 @@ export async function sendA2UPayment(params: {
       return { ok: false, reason: "App wallet is unavailable. Try again shortly." };
     }
     const acc = (await accRes.json()) as { sequence: string };
+    // Protocol 27 aligned: use the live network base fee (with surge headroom)
+    // instead of a hard-coded fee, and bound validity with explicit timebounds.
+    let baseFee = 100000;
+    try {
+      const fs = await fetch(`${horizon}/fee_stats`);
+      if (fs.ok) {
+        const j = (await fs.json()) as { last_ledger_base_fee?: string; fee_charged?: { p90?: string } };
+        baseFee = Math.max(Number(j.fee_charged?.p90 ?? 0), Number(j.last_ledger_base_fee ?? 0), baseFee);
+      }
+    } catch (e) {
+      console.error("[Pi] fee_stats lookup failed", e);
+    }
     const tx = new TransactionBuilder(new Account(keypair.publicKey(), acc.sequence), {
-      fee: "1000000",
+      fee: String(Math.min(baseFee, 10000000)),
       networkPassphrase: passphrase,
     })
       .addOperation(
