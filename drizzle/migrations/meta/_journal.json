@@ -15,6 +15,13 @@
       "when": 1792484473400,
       "tag": "0001_trade_service_dossiers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792484575844,
+      "tag": "0002_preserve_dossier_requirements",
+      "breakpoints": true
     }
   ]
 }

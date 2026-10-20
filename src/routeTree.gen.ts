@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as QfsRouteImport } from './routes/qfs'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TrustRouteImport } from './routes/trust'
@@ -56,6 +57,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QfsRoute = QfsRouteImport.update({
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/guide': typeof GuideRoute
   '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
+  '/operations': typeof OperationsRoute
   '/qfs': typeof QfsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/guide': typeof GuideRoute
   '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
+  '/operations': typeof OperationsRoute
   '/qfs': typeof QfsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/guide': typeof GuideRoute
   '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
+  '/operations': typeof OperationsRoute
   '/qfs': typeof QfsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trust': typeof TrustRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/how-it-works'
     | '/mcp'
+    | '/operations'
     | '/qfs'
     | '/sitemap.xml'
     | '/trust'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/how-it-works'
     | '/mcp'
+    | '/operations'
     | '/qfs'
     | '/sitemap.xml'
     | '/trust'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/how-it-works'
     | '/mcp'
+    | '/operations'
     | '/qfs'
     | '/sitemap.xml'
     | '/trust'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   GuideRoute: typeof GuideRoute
   HowItWorksRoute: typeof HowItWorksRoute
   McpRoute: typeof McpRoute
+  OperationsRoute: typeof OperationsRoute
   QfsRoute: typeof QfsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrustRoute: typeof TrustRoute
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qfs': {
@@ -504,6 +524,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuideRoute: GuideRoute,
   HowItWorksRoute: HowItWorksRoute,
   McpRoute: McpRoute,
+  OperationsRoute: OperationsRoute,
   QfsRoute: QfsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrustRoute: TrustRoute,
