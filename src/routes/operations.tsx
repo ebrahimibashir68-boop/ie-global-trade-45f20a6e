@@ -16,7 +16,7 @@ import { REACH_LABELS, SERVICES, SERVICE_GROUPS, getService, serviceReach, type 
 import { STATUS_LABELS, type Dossier, type DossierStatus } from "@/lib/trade/operations";
 
 export const Route = createFileRoute("/operations")({
-  validateSearch: (s: Record<string, unknown>) => ({ service: typeof s.service === "string" && getService(s.service) ? s.service : undefined }),
+  validateSearch: (s: Record<string, unknown>): { service?: string } => ({ service: typeof s.service === "string" && getService(s.service) ? s.service : undefined }),
   head: () => ({ meta: [
     { title: "Trade Operations — Pi-aligned service dossiers | PiTrade" },
     { name: "description", content: "Coordinate freight, customs, documents, insurance and regional trade in private service dossiers with Pi quotes and hashed off-chain audit records." },
