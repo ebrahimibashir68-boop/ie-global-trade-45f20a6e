@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiComplianceFooter } from "@/components/PiComplianceFooter";
+import { Button } from "@/components/ui/button";
 import { getService, REACH_LABELS, SERVICE_GROUPS, SERVICES, serviceReach } from "@/lib/trade/services";
 
 export const Route = createFileRoute("/services/$slug")({
@@ -117,6 +118,7 @@ function ServiceDetail() {
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3">
+          <Button asChild><Link to="/operations" search={{ service: s.slug }}>Create service dossier</Link></Button>
           <Link
             to="/contracts/new"
             className="rounded-full bg-gold-grad px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-gold"
