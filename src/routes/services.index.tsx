@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PiComplianceFooter } from "@/components/PiComplianceFooter";
+import { Button } from "@/components/ui/button";
 import {
   REACH_LABELS,
   SERVICE_GROUPS,
@@ -61,9 +62,10 @@ function ServicesIndex() {
           rail carriage, export and import clearance, national single windows, regional trade
           agreements and corridors, public procurement, the full document set, cargo cover,
           inspection, warehousing and export controls — expressed as contract data, milestones
-          and π settlement that is compatible with quantum-financial-system style, asset-backed
-          value transfer.
+          and Pi Network settlement. Service dossiers store operational evidence off-chain;
+          official filings, carriage and regulated services remain the responsibility of authorised providers.
         </p>
+        <Button asChild className="mt-5"><Link to="/operations">Open trade operations →</Link></Button>
 
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Reach:</span>

@@ -687,6 +687,112 @@ export type Database = {
           },
         ]
       }
+      trade_service_audit: {
+        Row: {
+          actor_id: string
+          created_at: string
+          dossier_id: string
+          id: string
+          previous_hash: string | null
+          record_hash: string
+          snapshot: Json
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          dossier_id: string
+          id?: string
+          previous_hash?: string | null
+          record_hash: string
+          snapshot: Json
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          previous_hash?: string | null
+          record_hash?: string
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_service_audit_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "trade_service_dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_service_dossiers: {
+        Row: {
+          checklist: Json
+          contract_id: string | null
+          created_at: string
+          destination_country: string
+          due_date: string | null
+          evidence: Json
+          external_reference: string
+          id: string
+          origin_country: string
+          owner_id: string
+          provider: string
+          quoted_pi: number
+          reach: string
+          service_slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checklist?: Json
+          contract_id?: string | null
+          created_at?: string
+          destination_country?: string
+          due_date?: string | null
+          evidence?: Json
+          external_reference?: string
+          id?: string
+          origin_country?: string
+          owner_id?: string
+          provider?: string
+          quoted_pi?: number
+          reach: string
+          service_slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          checklist?: Json
+          contract_id?: string | null
+          created_at?: string
+          destination_country?: string
+          due_date?: string | null
+          evidence?: Json
+          external_reference?: string
+          id?: string
+          origin_country?: string
+          owner_id?: string
+          provider?: string
+          quoted_pi?: number
+          reach?: string
+          service_slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_service_dossiers_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "trade_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -11,6 +11,7 @@ const NAV: Array<[string, string]> = [
   ["/contracts", "Contracts"],
   ["/contracts/new", "New"],
   ["/services", "Services"],
+  ["/operations", "Operations"],
   ["/qfs", "QFS"],
   ["/guide", "Guide"],
   ["/how-it-works", "How it works"],
@@ -43,7 +44,7 @@ export function SiteHeader() {
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Global Smart Contracts</div>
           </div>
         </Link>
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 xl:flex">
           {NAV.map(([to, label]) => <span key={to}>{link(to, label)}</span>)}
         </nav>
         <div className="flex items-center gap-2">
@@ -55,14 +56,14 @@ export function SiteHeader() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
-            className="grid size-9 place-items-center rounded-full border border-border bg-surface-2 text-foreground md:hidden"
+            className="grid size-9 place-items-center rounded-full border border-border bg-surface-2 text-foreground xl:hidden"
           >
             {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </div>
       {open && (
-        <nav className="border-t border-border/60 bg-background/95 px-4 pb-4 pt-2 md:hidden">
+        <nav className="border-t border-border/60 bg-background/95 px-4 pb-4 pt-2 xl:hidden">
           <div className="grid grid-cols-2 gap-2">
             {NAV.map(([to, label]) => (
               <Link
