@@ -15,6 +15,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "PiTrade — Global Import/Export Smart Contracts on Pi" },
       { property: "og:description", content: "Create, sign and settle international trade contracts in Pi. Direct Pi Wallet connection and user-to-app payments." },
       { property: "og:url", content: "https://ie-global-trade.lovable.app/" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/" }],
     scripts: [{
