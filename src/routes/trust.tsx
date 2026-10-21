@@ -8,6 +8,8 @@ export const Route = createFileRoute("/trust")({
       { name: "description", content: "How PiTrade handles authentication, payments, data, and privacy on the Pi Network." },
       { property: "og:title", content: "Trust, security & privacy · PiTrade" },
       { property: "og:description", content: "How PiTrade handles authentication, payments, data, and privacy on the Pi Network." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TrustPage,

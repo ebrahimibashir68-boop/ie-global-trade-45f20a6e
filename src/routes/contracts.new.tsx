@@ -9,6 +9,10 @@ export const Route = createFileRoute("/contracts/new")({
     meta: [
       { title: "Draft a new smart contract · PiTrade" },
       { name: "description", content: "Create a global import-export smart contract priced in Pi — parties, shipping, customs docs, insurance, escrow milestones." },
+      { property: "og:title", content: "Draft a trade contract in Pi · PiTrade" },
+      { property: "og:description", content: "Prepare trade terms, parties, shipping, customs documentation and Pi payment milestones." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NewContract,

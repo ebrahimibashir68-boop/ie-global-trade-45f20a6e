@@ -9,6 +9,7 @@ export const Route = createFileRoute("/how-it-works")({
       { property: "og:title", content: "How PiTrade Works — 6 steps from draft to delivery" },
       { property: "og:description", content: "Pi Wallet sign-in, drafting, user-to-app Pi payments with server approval, lifecycle tracking to delivery." },
       { property: "og:type", content: "article" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: "https://ie-global-trade.lovable.app/how-it-works" },
     ],
     links: [{ rel: "canonical", href: "https://ie-global-trade.lovable.app/how-it-works" }],
